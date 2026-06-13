@@ -1,5 +1,5 @@
 /**
- * 第一阶段集成测试：processMessages 管道调用。
+ * 第一阶段集成测试：对事件提取功能的测试，processMessages 管道调用。
  *
  * 从 test-cases-input.json 中筛选 extract-event 用例，
  * 解析 recentMessages → 调用 processMessages → 输出到 data/test-01/
@@ -10,9 +10,9 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { startup } from "../index";
-import { processMessages } from "../core";
-import type { Event, ChatMessage } from "../types";
+import { startup } from "../../index";
+import { processMessages } from "../../core";
+import type { Event, ChatMessage } from "../../types";
 
 // ---------------------------------------------------------------------------
 // 类型
