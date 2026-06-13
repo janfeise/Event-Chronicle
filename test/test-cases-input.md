@@ -1,0 +1,1115 @@
+# Event Chronicle — 测试输入文件
+
+> **版本**: 1.0  
+> **说明**: 此文件仅包含每个测试用例的输入部分（`existingEvents` + `recentMessages` / `newEvents`），供自动化测试框架读取。  
+> **对应完整文件**: `test-cases-full.md`
+
+---
+
+# 模块一：事件识别能力
+
+## TC-1.1：基本状态变化 — 角色身份变更
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[User]: 我决定辞去现在的工作，成为一名自由职业者。
+[AI]: 这是一个重大的决定，你考虑清楚了吗？
+[User]: 是的，我已经提交了辞职信。
+```
+
+---
+
+## TC-1.2：地点变化 — 到达新场景
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[User]: 我推开沉重的橡木门，走进了古老的图书馆。
+[AI]: 你看到馆内高耸的书架和昏黄的灯光。
+[User]: 这里的气息很陈旧，空气中弥漫着纸张的味道。
+```
+
+---
+
+## TC-1.3：计划建立 — 多人约定
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[小明]: 周末有什么安排吗？
+[小红]: 没有，在家闲着。
+[小明]: 那我们去爬山吧，听说西山风景不错。
+[小红]: 好啊，叫上小刚一起。
+[小明]: 行，我负责准备食物，你联系小刚。
+[小红]: 没问题，周六早上七点校门口集合。
+[小明]: 就这么定了。
+```
+
+---
+
+## TC-1.4：任务推进 — 项目实质进展
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[开发者A]: 后端 API 已经全部完成并部署到测试环境了。
+[开发者B]: 收到，我这边前端对接也做完了，登录和注册流程都调通了。
+[开发者A]: 那我们今晚合并到主分支，明天开始集成测试。
+[开发者B]: 同意，我先更新一下接口文档。
+```
+
+---
+
+## TC-1.5：重要信息揭示
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[侦探]: 我检查了现场，发现了一个关键线索。
+[助手]: 什么线索？
+[侦探]: 窗户虽然锁着，但窗台上的灰尘有被移动过的痕迹，说明有人从这里进出过。
+[助手]: 这么说，密室并不存在？
+[侦探]: 没错，这不是密室杀人案，凶手是从窗户逃走的。
+```
+
+---
+
+## TC-1.6：物品获得
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[冒险者]: 我从宝箱中找到了一把发光的剑！
+[同伴]: 让我看看……这上面刻着古代符文，应该是一把魔法武器。
+[冒险者]: 太好了，正好可以在接下来的战斗中使用。
+```
+
+---
+
+## TC-1.7：关系变化
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[Alice]: 经过这段时间的相处，我觉得我们应该正式确定关系。
+[Bob]: 我也是这么想的。你愿意做我的女朋友吗？
+[Alice]: 我愿意。
+[Bob]: 那我们以后就是恋人了。
+```
+
+---
+
+## TC-1.8：多事件并发 — 同一对话中的多重状态变化
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[队长]: 我们到达了废弃工厂。大家分散搜索，保持通讯。
+[队员A]: 我在二楼发现了一些文件。
+[队员B]: 地下室有一辆被遗弃的货车，车牌被拆掉了。
+[队长]: 很好，这都是重要发现。A 你继续搜查文件，B 你去检查货车，我联系总部汇报。
+[队员A]: 等等，这些文件上提到了"红月计划"！
+[队长]: 红月计划？这和我们一直在追查的案件有关。立刻把这些文件收好。
+```
+
+---
+
+# 模块二：事件过滤能力
+
+## TC-2.1：问候与告别不应记录
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[User]: 你好！
+[AI]: 你好！有什么可以帮你的吗？
+[User]: 今天天气真好。
+[AI]: 是啊，阳光明媚的。
+[User]: 好的，那我先走了，拜拜！
+[AI]: 再见，祝你有美好的一天！
+```
+
+---
+
+## TC-2.2：情绪表达与无后果玩笑不应记录
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[角色A]: 哈哈哈，你讲的笑话太好笑了！
+[角色B]: 谢谢夸奖，我也觉得我很有幽默感。
+[角色A]: 笑得我肚子疼。
+[角色B]: 那下次再给你讲一个更好笑的。
+[角色A]: 哈哈哈哈好的好的。
+```
+
+---
+
+## TC-2.3：对已知计划的简单认可不应记录
+- **Prompt**: extract-event
+
+**existingEvents**:
+```json
+[
+  {
+    "title": "约定周末爬西山",
+    "summary": "小明和小红约定周六爬西山",
+    "importance": 4,
+    "participants": ["小明", "小红"],
+    "location": "西山",
+    "tags": ["计划"]
+  }
+]
+```
+
+**recentMessages**:
+```
+[小红]: 周末爬山的事还记得吧？
+[小明]: 嗯嗯，记得。
+[小红]: 好的。
+[小明]: 没问题。
+```
+
+---
+
+## TC-2.4：闲聊讨论（无决策无结果）不应记录
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[用户A]: 你觉得哪种编程语言最好？
+[用户B]: 我觉得 Python 挺好用的。
+[用户A]: 但我更喜欢 JavaScript。
+[用户B]: 各有优劣吧。
+[用户A]: 确实，选什么语言主要看项目需求。
+[用户B]: 是的，没有绝对的最好。
+```
+
+---
+
+## TC-2.5：过去事件不应记录（Past Event Rule）
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[用户]: 我昨天去了市中心的新咖啡店。
+[用户]: 那家店环境很好，咖啡也不错。
+[用户]: 哦对了，我大学的时候还学过两年的咖啡制作。
+[用户]: 所以我对咖啡还是有点了解的。
+[AI]: 那你现在打算开咖啡店吗？
+[用户]: 不，只是随便聊聊。我们开始做今天的任务吧。
+```
+
+---
+
+## TC-2.6：讨论过程不应记录，仅记录结果
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[团队]: 我们需要决定下一季度的研发方向。
+[成员A]: 我建议做 AI 语音助手。
+[成员B]: 但那个赛道竞争太激烈了。
+[成员A]: 我们可以做垂直领域，避开大厂。
+[成员B]: 垂直领域市场太小。
+[成员C]: 我觉得做智能家居控制中心更有前景。
+[成员A]: 智能家居需要硬件团队，我们没有。
+[成员B]: 那还是 AI 方向，但做图像识别。
+[成员C]: 同意，图像识别我们有人才储备。
+[团队]: 好，那就定 AI 图像识别方向。下周一前各小组提交详细方案。
+```
+
+---
+
+# 模块三：时间线能力
+
+## TC-3.1：顺序事件保持时间线
+- **Prompt**: extract-event
+
+**existingEvents**:
+```json
+[
+  {
+    "title": "进入古老图书馆",
+    "summary": "用户进入古老图书馆",
+    "importance": 4,
+    "participants": ["用户"],
+    "location": "古老图书馆",
+    "tags": ["地点变化"]
+  }
+]
+```
+
+**recentMessages**:
+```
+[用户]: 我在图书馆找到了一本古书，封面写着《失落的咒语》。
+[图书管理员]: 那本书已经失踪了两百年了！
+[用户]: 我翻开书，里面掉出一张泛黄的地图。
+[图书管理员]: 这张地图……标记的是禁林深处的某个地点！
+[用户]: 我决定按照地图去禁林寻找真相。
+[用户]: 我离开了图书馆，向禁林方向出发。
+```
+
+---
+
+## TC-3.2：地点变化链
+- **Prompt**: extract-event
+
+**existingEvents**:
+```json
+[
+  {
+    "title": "从家中出发",
+    "summary": "用户离开家",
+    "importance": 3,
+    "participants": ["用户"],
+    "location": "家",
+    "tags": ["地点变化"]
+  }
+]
+```
+
+**recentMessages**:
+```
+[用户]: 我先去了超市买了些食材。
+[用户]: 然后乘地铁去了朋友家。
+[用户]: 到达朋友家后，我们一起准备了晚餐。
+[朋友]: 吃完饭后我们去附近的公园散步吧。
+[用户]: 好啊，走吧。
+```
+
+---
+
+## TC-3.3：多阶段任务推进（不应错误合并）
+- **Prompt**: merge-event
+
+**existingEvents**:
+```json
+[
+  {
+    "title": "开始开发音乐系统",
+    "summary": "开发者开始开发音乐播放系统",
+    "importance": 5,
+    "participants": ["开发者"],
+    "location": "",
+    "tags": ["项目推进", "开发"]
+  }
+]
+```
+
+**newEvents**:
+```json
+[
+  {
+    "title": "完成音乐系统登录模块",
+    "summary": "开发者完成音乐播放系统的登录模块开发",
+    "importance": 5,
+    "participants": ["开发者"],
+    "location": "",
+    "tags": ["项目推进", "开发"]
+  }
+]
+```
+
+---
+
+## TC-3.4：冲突事件都保留（状态变化链）
+- **Prompt**: merge-event
+
+**existingEvents**:
+```json
+[
+  {
+    "title": "决定参加编程比赛",
+    "summary": "用户决定参加下周的编程比赛",
+    "importance": 5,
+    "participants": ["用户"],
+    "location": "",
+    "tags": ["计划", "比赛"]
+  }
+]
+```
+
+**newEvents**:
+```json
+[
+  {
+    "title": "取消参加编程比赛",
+    "summary": "用户因时间冲突取消参加编程比赛",
+    "importance": 5,
+    "participants": ["用户"],
+    "location": "",
+    "tags": ["计划取消", "比赛"]
+  }
+]
+```
+
+---
+
+## TC-3.5：进入和离开都应保留
+- **Prompt**: merge-event
+
+**existingEvents**:
+```json
+[
+  {
+    "title": "进入图书馆",
+    "summary": "用户进入图书馆查阅资料",
+    "importance": 3,
+    "participants": ["用户"],
+    "location": "图书馆",
+    "tags": ["地点变化"]
+  }
+]
+```
+
+**newEvents**:
+```json
+[
+  {
+    "title": "离开图书馆",
+    "summary": "用户查阅完毕，离开图书馆",
+    "importance": 3,
+    "participants": ["用户"],
+    "location": "图书馆",
+    "tags": ["地点变化"]
+  }
+]
+```
+
+---
+
+# 模块四：事实约束能力
+
+## TC-4.1：不猜测未明确提及的地点
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[用户]: 我们到了，开始开会吧。
+[同事A]: 好的，我先汇报一下上周的进展。
+[同事B]: 我这边遇到了一些技术问题需要讨论。
+[用户]: 好，问题记录下来，会后专项解决。
+```
+
+---
+
+## TC-4.2：不添加未明确出现的人物
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[用户]: 我找到了一封旧信，上面写着"亲爱的妹妹，我在北方前线一切安好"。
+[用户]: 看来这封信的主人有一个在军队的哥哥。
+[AI]: 这封信的年代看起来很久远了。
+[用户]: 我要把这封信收好，也许以后有用。
+```
+
+---
+
+## TC-4.3：不推断未确认的关系
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[角色A]: 你把文件放哪了？
+[角色B]: 在桌子上。
+[角色A]: 谢谢。
+[角色B]: 不客气。
+[角色A]: 对了，老板让我们明天早点到。
+[角色B]: 知道了。
+```
+
+---
+
+## TC-4.4：merge 时不创造不存在的事件
+- **Prompt**: merge-event
+
+**existingEvents**:
+```json
+[
+  {
+    "title": "开始学习前端开发",
+    "summary": "用户开始学习前端开发",
+    "importance": 4,
+    "participants": ["用户"],
+    "location": "",
+    "tags": ["学习"]
+  }
+]
+```
+
+**newEvents**:
+```json
+[
+  {
+    "title": "完成 HTML 基础学习",
+    "summary": "用户完成 HTML 基础知识的学习",
+    "importance": 3,
+    "participants": ["用户"],
+    "location": "",
+    "tags": ["学习", "进度"]
+  }
+]
+```
+
+---
+
+## TC-4.5：不补充未出现的信息
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[用户]: 我收到了一个包裹。
+[用户]: 不知道是谁寄来的。
+[AI]: 包裹上有什么标记吗？
+[用户]: 没有，只有一个地址。
+```
+
+---
+
+# 模块五：事件压缩能力
+
+## TC-5.1：相关提议-接受-商量应合并为结果
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[同学A]: 下课一起去吃饭吧？
+[同学B]: 好啊好啊。
+[同学A]: 去哪吃？
+[同学B]: 去食堂二楼的新窗口吧，听说不错。
+[同学A]: 可以，那下课铃响后在教室门口等。
+[同学B]: 没问题。
+```
+
+---
+
+## TC-5.2：谈判过程压缩为协议结果
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[商人A]: 这批货我要价500金币。
+[商人B]: 太贵了，最多300。
+[商人A]: 400，不能再少了。
+[商人B]: 350，现在就成交。
+[商人A]: 375，这是我的底线。
+[商人B]: 好，375成交。明天交货。
+[商人A]: 一言为定。
+```
+
+---
+
+## TC-5.3：不应过度压缩不同结果的事件
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[冒险者]: 我击败了守门的石像鬼，进入了遗迹内部。
+[冒险者]: 遗迹大厅里有一个古老的祭坛，上面放着一颗蓝色的宝石。
+[冒险者]: 我拿起了宝石，突然整个遗迹开始震动！
+[冒险者]: 我赶紧跑出了遗迹，遗迹在我身后坍塌了。
+```
+
+---
+
+## TC-5.4：合并同类连续动作
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[厨师]: 我先洗了菜。
+[厨师]: 然后切了肉。
+[厨师]: 热了锅，倒了油。
+[厨师]: 把肉下锅炒到变色。
+[厨师]: 加入蔬菜翻炒。
+[厨师]: 最后加入调料，一盘青椒肉丝就做好了。
+```
+
+---
+
+# 模块六：去重能力
+
+## TC-6.1：信息完整度不同 — 保留更完整版本
+- **Prompt**: merge-event
+
+**existingEvents**:
+```json
+[
+  {
+    "title": "开始学习Vue",
+    "summary": "用户开始学习Vue",
+    "importance": 4,
+    "participants": ["用户"],
+    "location": "",
+    "tags": ["学习"]
+  }
+]
+```
+
+**newEvents**:
+```json
+[
+  {
+    "title": "用户开始学习Vue",
+    "summary": "用户开始学习Vue",
+    "importance": 4,
+    "participants": ["用户"],
+    "location": "",
+    "tags": ["学习"]
+  }
+]
+```
+
+---
+
+## TC-6.2：相同结果不同表述 — 保留信息更全者
+- **Prompt**: merge-event
+
+**existingEvents**:
+```json
+[
+  {
+    "title": "决定周末去露营",
+    "summary": "决定周末去露营",
+    "importance": 4,
+    "participants": ["用户", "朋友"],
+    "location": "",
+    "tags": ["计划"]
+  }
+]
+```
+
+**newEvents**:
+```json
+[
+  {
+    "title": "双方约定周末露营",
+    "summary": "用户和朋友双方约定周末去郊野公园露营，准备帐篷和食物",
+    "importance": 4,
+    "participants": ["用户", "朋友"],
+    "location": "郊野公园",
+    "tags": ["计划", "户外活动"]
+  }
+]
+```
+
+---
+
+## TC-6.3：同一主线不同阶段 — 都保留
+- **Prompt**: merge-event
+
+**existingEvents**:
+```json
+[
+  {
+    "title": "开始学习Vue",
+    "summary": "用户开始学习Vue前端框架",
+    "importance": 4,
+    "participants": ["用户"],
+    "location": "",
+    "tags": ["学习"]
+  },
+  {
+    "title": "完成Vue基础课程",
+    "summary": "用户完成Vue基础课程的学习",
+    "importance": 5,
+    "participants": ["用户"],
+    "location": "",
+    "tags": ["学习", "里程碑"]
+  }
+]
+```
+
+**newEvents**:
+```json
+[
+  {
+    "title": "开发第一个Vue项目",
+    "summary": "用户开始开发第一个Vue实战项目",
+    "importance": 6,
+    "participants": ["用户"],
+    "location": "",
+    "tags": ["学习", "项目实践"]
+  }
+]
+```
+
+---
+
+## TC-6.4：新事件是旧事件的更完整版本 — 升级替换
+- **Prompt**: merge-event
+
+**existingEvents**:
+```json
+[
+  {
+    "title": "开始学习前端",
+    "summary": "用户开始学习前端",
+    "importance": 4,
+    "participants": ["用户"],
+    "location": "",
+    "tags": ["学习"]
+  }
+]
+```
+
+**newEvents**:
+```json
+[
+  {
+    "title": "开始学习Vue前端开发",
+    "summary": "用户开始系统学习Vue前端框架开发",
+    "importance": 4,
+    "participants": ["用户"],
+    "location": "",
+    "tags": ["学习", "Vue"]
+  }
+]
+```
+
+---
+
+## TC-6.5：完全不相关的不同事件 — 都保留
+- **Prompt**: merge-event
+
+**existingEvents**:
+```json
+[
+  {
+    "title": "进入咖啡店",
+    "summary": "用户进入市中心咖啡店",
+    "importance": 3,
+    "participants": ["用户"],
+    "location": "咖啡店",
+    "tags": ["地点变化"]
+  }
+]
+```
+
+**newEvents**:
+```json
+[
+  {
+    "title": "接到紧急工作电话",
+    "summary": "用户在咖啡店接到紧急工作电话，需要立即处理线上故障",
+    "importance": 6,
+    "participants": ["用户"],
+    "location": "咖啡店",
+    "tags": ["工作", "紧急"]
+  }
+]
+```
+
+---
+
+# 模块七：重要性评分能力
+
+## TC-7.1：日常事务（1-3 分）
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[用户]: 早上起床后我刷了牙洗了脸。
+[用户]: 然后做了早餐，吃了面包和牛奶。
+[用户]: 出门前检查了一下门窗有没有关好。
+```
+
+---
+
+## TC-7.2：值得注意（4-6 分）
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[学生]: 期中考试成绩出来了，我数学考了全班第三。
+[朋友]: 哇，进步好大啊！上次你还在第十名。
+[学生]: 是啊，这段时间的努力没白费。
+```
+
+---
+
+## TC-7.3：重大事件（7-8 分）
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[主角]: 我终于找到了！这就是传说中的失落之城——亚特兰蒂斯！
+[同伴]: 难以置信，我们花了三年时间，终于找到了。
+[主角]: 这座城市的发现将改变人类对古代文明的认知。
+[同伴]: 我们需要立刻联系考古协会，这将是本世纪最重要的考古发现。
+```
+
+---
+
+## TC-7.4：故事定义级（9-10 分）
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[英雄]: 我决定了，我要继承父亲遗志，成为守护这座城市的英雄。
+[导师]: 这将是危险的道路，你可能会失去一切。
+[英雄]: 我知道，但如果我不站出来，就没人能保护大家了。
+[导师]: 那从今天起，我将把所有绝技传授给你。这就是命运的转折点。
+[英雄]: 我接受。无论前路多么艰难，我绝不退缩。
+```
+
+---
+
+## TC-7.5：重要性随上下文变化
+- **Prompt**: extract-event
+
+**existingEvents**:
+```json
+[
+  {
+    "title": "被任命为调查组组长",
+    "summary": "用户被任命为连环案件特别调查组组长",
+    "importance": 8,
+    "participants": ["用户"],
+    "location": "",
+    "tags": ["职务变化"]
+  }
+]
+```
+
+**recentMessages**:
+```
+[助手]: 组长，刚收到一个线人消息，说在码头仓库有可疑活动。
+[用户]: 知道了，立刻派人去查看。
+[助手]: 是，我马上安排。
+[用户]: 另外，把之前的案件卷宗再梳理一遍，看看有没有遗漏的线索。
+```
+
+---
+
+# 模块八：输出格式能力
+
+## TC-8.1：仅返回 JSON 数组，无 Markdown 包裹
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[用户]: 我今天买了一本新书，《百年孤独》。
+```
+
+---
+
+## TC-8.2：所有必填字段存在且类型正确
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[用户]: 我搬到新公寓了。
+```
+
+---
+
+## TC-8.3：无事件时返回空数组
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[用户]: 你好啊。
+[AI]: 你好！
+[用户]: 哈哈哈。
+[AI]: 有什么好笑的？
+[用户]: 没什么，随便笑笑。
+```
+
+---
+
+## TC-8.4：merge 输出完整数组（包含所有事件）
+- **Prompt**: merge-event
+
+**existingEvents**:
+```json
+[
+  {
+    "title": "到达火车站",
+    "summary": "用户到达火车站",
+    "importance": 3,
+    "participants": ["用户"],
+    "location": "火车站",
+    "tags": ["地点变化"]
+  }
+]
+```
+
+**newEvents**:
+```json
+[
+  {
+    "title": "购买前往北京的火车票",
+    "summary": "用户在火车站购买前往北京的火车票",
+    "importance": 4,
+    "participants": ["用户"],
+    "location": "火车站",
+    "tags": ["出行", "购票"]
+  }
+]
+```
+
+---
+
+# 模块九：边界条件能力
+
+## TC-9.1：空输入 — 无 meaningful 消息
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+（无新消息）
+```
+
+---
+
+## TC-9.2：混合语言的消息
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[User]: I finally finished my thesis!
+[导师]: 恭喜！Congratulations! 这是你多年努力的成果。
+[User]: 谢谢老师。接下来我打算申请MIT的博士后position。
+[导师]: 我会帮你写recommendation letter。下周一之前给你。
+[User]: Thank you so much! 我会准备好其他申请材料。
+```
+
+---
+
+## TC-9.3：大量 existingEvents 时的处理
+- **Prompt**: extract-event
+
+**existingEvents**:
+```json
+[
+  {"title": "事件1", "summary": "...", "importance": 3, "participants": ["用户"], "location": "", "tags": []},
+  {"title": "事件2", "summary": "...", "importance": 3, "participants": ["用户"], "location": "", "tags": []},
+  {"title": "事件3", "summary": "...", "importance": 3, "participants": ["用户"], "location": "", "tags": []},
+  {"title": "事件4", "summary": "...", "importance": 3, "participants": ["用户"], "location": "", "tags": []},
+  {"title": "事件5", "summary": "...", "importance": 3, "participants": ["用户"], "location": "", "tags": []},
+  {"title": "事件6", "summary": "...", "importance": 3, "participants": ["用户"], "location": "", "tags": []},
+  {"title": "事件7", "summary": "...", "importance": 3, "participants": ["用户"], "location": "", "tags": []},
+  {"title": "事件8", "summary": "...", "importance": 3, "participants": ["用户"], "location": "", "tags": []},
+  {"title": "事件9", "summary": "...", "importance": 3, "participants": ["用户"], "location": "", "tags": []},
+  {"title": "事件10", "summary": "...", "importance": 3, "participants": ["用户"], "location": "", "tags": []},
+  {"title": "事件11", "summary": "...", "importance": 3, "participants": ["用户"], "location": "", "tags": []},
+  {"title": "事件12", "summary": "...", "importance": 3, "participants": ["用户"], "location": "", "tags": []},
+  {"title": "事件13", "summary": "...", "importance": 3, "participants": ["用户"], "location": "", "tags": []},
+  {"title": "事件14", "summary": "...", "importance": 3, "participants": ["用户"], "location": "", "tags": []},
+  {"title": "事件15", "summary": "...", "importance": 3, "participants": ["用户"], "location": "", "tags": []},
+  {"title": "事件16", "summary": "...", "importance": 3, "participants": ["用户"], "location": "", "tags": []},
+  {"title": "事件17", "summary": "...", "importance": 3, "participants": ["用户"], "location": "", "tags": []},
+  {"title": "事件18", "summary": "...", "importance": 3, "participants": ["用户"], "location": "", "tags": []},
+  {"title": "事件19", "summary": "...", "importance": 3, "participants": ["用户"], "location": "", "tags": []},
+  {"title": "事件20", "summary": "...", "importance": 3, "participants": ["用户"], "location": "", "tags": []},
+  {"title": "事件21", "summary": "...", "importance": 3, "participants": ["用户"], "location": "", "tags": []},
+  {"title": "事件22", "summary": "...", "importance": 3, "participants": ["用户"], "location": "", "tags": []},
+  {"title": "事件23", "summary": "...", "importance": 3, "participants": ["用户"], "location": "", "tags": []},
+  {"title": "事件24", "summary": "...", "importance": 3, "participants": ["用户"], "location": "", "tags": []},
+  {"title": "事件25", "summary": "...", "importance": 3, "participants": ["用户"], "location": "", "tags": []}
+]
+```
+
+**recentMessages**:
+```
+[用户]: 我决定了，从今天开始我要写一本小说。
+[用户]: 题材是科幻冒险。
+```
+
+---
+
+## TC-9.4：消息中包含特殊字符
+- **Prompt**: extract-event
+
+**existingEvents**: `[]`
+
+**recentMessages**:
+```
+[用户]: 我在代码里发现了一个严重的 bug：`rm -rf / --no-preserve-root` 被写进了清理脚本！
+[开发]: 这是安全漏洞！我们需要立即修复。
+[用户]: 已经修复了，改成了 `rm -rf "${TEMP_DIR}"/*`，并加了路径检查。
+[开发]: CVE编号申请了吗？这个需要上报。
+[用户]: 已经申请了，编号是 CVE-2024-12345。
+```
+
+---
+
+# 模块十：长期运行能力
+
+## TC-10.1：多轮提取保持一致性
+- **Prompt**: extract-event
+
+**existingEvents**:
+```json
+[
+  {
+    "title": "到达精灵森林入口",
+    "summary": "冒险小队到达精灵森林入口",
+    "importance": 4,
+    "participants": ["战士", "法师", "游侠"],
+    "location": "精灵森林入口",
+    "tags": ["地点变化"]
+  },
+  {
+    "title": "与精灵守卫交涉获得通行许可",
+    "summary": "冒险小队与精灵守卫交涉后获得进入森林的许可",
+    "importance": 5,
+    "participants": ["战士", "法师", "精灵守卫"],
+    "location": "精灵森林入口",
+    "tags": ["交涉", "许可"]
+  },
+  {
+    "title": "进入精灵森林",
+    "summary": "冒险小队进入精灵森林内部",
+    "importance": 4,
+    "participants": ["战士", "法师", "游侠"],
+    "location": "精灵森林",
+    "tags": ["地点变化"]
+  },
+  {
+    "title": "发现古老精灵遗迹",
+    "summary": "冒险小队在森林深处发现古老精灵遗迹",
+    "importance": 5,
+    "participants": ["战士", "法师", "游侠"],
+    "location": "精灵森林深处",
+    "tags": ["发现", "探索"]
+  },
+  {
+    "title": "游侠在遗迹中触发陷阱受轻伤",
+    "summary": "游侠在探索遗迹时触发古老陷阱，受轻伤",
+    "importance": 4,
+    "participants": ["游侠"],
+    "location": "精灵遗迹",
+    "tags": ["陷阱", "受伤"]
+  }
+]
+```
+
+**recentMessages**:
+```
+[法师]: 我在遗迹的石碑上解读出了一些古代文字……这上面记载着一个关于森林之心的传说。
+[战士]: 森林之心是什么？
+[法师]: 据说是维系整个精灵森林生命力的神器。但碑文说它在千年前的大战中碎裂成了三块。
+[游侠]: 三块碎片？这听起来像是一个任务。
+[法师]: 没错，碑文还标记了其中一块碎片的位置——在北方的暗影沼泽。
+[战士]: 那我们还等什么？目标暗影沼泽，出发！
+[游侠]: 等等，我的伤包扎好了。现在可以走了。
+[法师]: 好，我制作了一张简单的路线图，可以减少迷路的风险。
+```
+
+---
+
+## TC-10.2：长期运行中不产生重复事件
+- **Prompt**: extract-event
+
+**existingEvents**:
+```json
+[
+  {
+    "title": "约定周末去海边",
+    "summary": "小明和小红约定周末去海边度假",
+    "importance": 4,
+    "participants": ["小明", "小红"],
+    "location": "海边",
+    "tags": ["计划", "旅行"]
+  },
+  {
+    "title": "购买海滩用品",
+    "summary": "小明购买海滩度假所需用品（泳衣、防晒霜）",
+    "importance": 2,
+    "participants": ["小明"],
+    "location": "",
+    "tags": ["准备", "购物"]
+  },
+  {
+    "title": "确认酒店预订",
+    "summary": "小红确认了海边酒店的预订",
+    "importance": 3,
+    "participants": ["小红"],
+    "location": "",
+    "tags": ["准备", "预订"]
+  },
+  {
+    "title": "出发前往海边",
+    "summary": "小明和小红出发前往海边度假",
+    "importance": 4,
+    "participants": ["小明", "小红"],
+    "location": "海边方向",
+    "tags": ["地点变化", "旅行"]
+  }
+]
+```
+
+**recentMessages**:
+```
+[小红]: 我们已经出发了对吧？
+[小明]: 对，已经在路上了。酒店订好了吧？
+[小红]: 订好了，之前就确认过的。海滩用品我也带了。
+[小明]: 太好了，就等着到海边好好玩了。
+[小红]: 别忘了我们约的是周末哦。
+[小明]: 当然记得，现在就是周末呀。
+```
