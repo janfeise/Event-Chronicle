@@ -1,0 +1,27 @@
+{
+  "description": "进展 — 同一主线不同阶段，两条都保留",
+  "rule": "Progression",
+  "existingEvents": [
+    {
+      "id": "evt_001",
+      "title": "开始开发音乐系统",
+      "summary": "开发者开始开发音乐播放系统",
+      "importance": 5,
+      "participants": ["开发者"],
+      "location": "",
+      "tags": ["项目推进", "开发"]
+    }
+  ],
+  "newEvents": [
+    {
+      "id": "evt_new_001",
+      "title": "完成音乐系统登录模块",
+      "summary": "开发者完成音乐播放系统的登录模块开发",
+      "importance": 5,
+      "participants": ["开发者"],
+      "location": "",
+      "tags": ["项目推进", "开发"]
+    }
+  ],
+  "expectedBehavior": "两个事件是同一主线的不同阶段，都应保留，不应合并。最终 2 条"
+}

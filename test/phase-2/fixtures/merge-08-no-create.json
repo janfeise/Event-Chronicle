@@ -1,0 +1,27 @@
+{
+  "description": "不创造事件 — merge 时不应创造不存在的事件",
+  "rule": "Truthfulness",
+  "existingEvents": [
+    {
+      "id": "evt_001",
+      "title": "开始学习前端开发",
+      "summary": "用户开始学习前端开发",
+      "importance": 4,
+      "participants": ["用户"],
+      "location": "",
+      "tags": ["学习"]
+    }
+  ],
+  "newEvents": [
+    {
+      "id": "evt_new_001",
+      "title": "完成 HTML 基础学习",
+      "summary": "用户完成 HTML 基础知识的学习",
+      "importance": 3,
+      "participants": ["用户"],
+      "location": "",
+      "tags": ["学习", "进度"]
+    }
+  ],
+  "expectedBehavior": "两个事件是不同阶段，都应保留。不应创造额外事件（如推测用户接下来学CSS）。最终 2 条"
+}

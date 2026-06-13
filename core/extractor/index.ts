@@ -30,13 +30,27 @@ export async function extractEvents(
     recentMessages: formattedMessages,
   });
 
-  console.log(prompt);
-
   // 3. 调用 LLM（由 core/llm 统一管理）
   const response = await complete({
     messages: [{ role: "user", content: prompt }],
   });
 
   // 4. 解析结果
-  return parseEvents(response);
+  const events = parseEvents(response);
+
+  // 5. 程序注入 ID（非 LLM 生成，减少 token 开销且更可靠）
+  return injectIds(events);
+}
+
+// ---------------------------------------------------------------------------
+// 内部
+// ---------------------------------------------------------------------------
+
+/** 为每个事件注入唯一 ID，格式 evt_{timestamp}_{random6hex} */
+function injectIds(events: Event[]): Event[] {
+  const ts = Date.now();
+  for (const e of events) {
+    e.id = `evt_${ts}_${Math.random().toString(16).slice(2, 8)}`;
+  }
+  return events;
 }

@@ -1,0 +1,27 @@
+{
+  "description": "无关事件 — 完全不相关的两个事件都保留",
+  "rule": "Unrelated",
+  "existingEvents": [
+    {
+      "id": "evt_001",
+      "title": "进入咖啡店",
+      "summary": "用户进入市中心咖啡店",
+      "importance": 3,
+      "participants": ["用户"],
+      "location": "咖啡店",
+      "tags": ["地点变化"]
+    }
+  ],
+  "newEvents": [
+    {
+      "id": "evt_new_001",
+      "title": "接到紧急工作电话",
+      "summary": "用户在咖啡店接到紧急工作电话，需要立即处理线上故障",
+      "importance": 6,
+      "participants": ["用户"],
+      "location": "咖啡店",
+      "tags": ["工作", "紧急"]
+    }
+  ],
+  "expectedBehavior": "两个事件完全不相关（地点变化 vs 工作紧急），不应错误合并。最终 2 条"
+}

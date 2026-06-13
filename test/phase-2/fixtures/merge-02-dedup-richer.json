@@ -1,0 +1,27 @@
+{
+  "description": "去重 — 新事件信息更完整，应替换旧事件",
+  "rule": "Deduplication / Upgrade",
+  "existingEvents": [
+    {
+      "id": "evt_001",
+      "title": "决定周末去露营",
+      "summary": "决定周末去露营",
+      "importance": 4,
+      "participants": ["用户", "朋友"],
+      "location": "",
+      "tags": ["计划"]
+    }
+  ],
+  "newEvents": [
+    {
+      "id": "evt_new_001",
+      "title": "双方约定周末露营",
+      "summary": "用户和朋友双方约定周末去郊野公园露营，准备帐篷和食物",
+      "importance": 4,
+      "participants": ["用户", "朋友"],
+      "location": "郊野公园",
+      "tags": ["计划", "户外活动"]
+    }
+  ],
+  "expectedBehavior": "新事件信息更全（有 location、准备事项），应 update 或替换旧事件，最终仅 1 条（以新事件为准）"
+}

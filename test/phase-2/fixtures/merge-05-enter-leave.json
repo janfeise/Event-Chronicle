@@ -1,0 +1,27 @@
+{
+  "description": "进入和离开 — 地点变化链都应保留",
+  "rule": "Progression / Timeline",
+  "existingEvents": [
+    {
+      "id": "evt_001",
+      "title": "进入图书馆",
+      "summary": "用户进入图书馆查阅资料",
+      "importance": 3,
+      "participants": ["用户"],
+      "location": "图书馆",
+      "tags": ["地点变化"]
+    }
+  ],
+  "newEvents": [
+    {
+      "id": "evt_new_001",
+      "title": "离开图书馆",
+      "summary": "用户查阅完毕，离开图书馆",
+      "importance": 3,
+      "participants": ["用户"],
+      "location": "图书馆",
+      "tags": ["地点变化"]
+    }
+  ],
+  "expectedBehavior": "进入和离开是时间线上不同的点，不应合并。最终 2 条"
+}

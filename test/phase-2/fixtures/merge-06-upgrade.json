@@ -1,0 +1,27 @@
+{
+  "description": "升级 — 新事件是旧事件的更完整版本，替换旧事件",
+  "rule": "Upgrade",
+  "existingEvents": [
+    {
+      "id": "evt_001",
+      "title": "开始学习前端",
+      "summary": "用户开始学习前端",
+      "importance": 4,
+      "participants": ["用户"],
+      "location": "",
+      "tags": ["学习"]
+    }
+  ],
+  "newEvents": [
+    {
+      "id": "evt_new_001",
+      "title": "开始学习Vue前端开发",
+      "summary": "用户开始系统学习Vue前端框架开发",
+      "importance": 4,
+      "participants": ["用户"],
+      "location": "",
+      "tags": ["学习", "Vue"]
+    }
+  ],
+  "expectedBehavior": "新事件是旧事件的更具体版本（前端 → Vue前端），应替换。最终 1 条（新事件）"
+}

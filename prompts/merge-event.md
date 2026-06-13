@@ -229,9 +229,49 @@
 
 # Output
 
-返回完整编年史事件数组。
+返回合并指令的 JSON 数组，而非完整事件数组。
 
-仅返回 JSON。
+每个指令是以下四种 action 之一。
+
+程序将按顺序执行指令，未被指令引用的事件默认为 keep。
+
+## update — 修改已有事件
+
+用于 Upgrade / 信息更完整的情况。
+通过 `id` 定位已有事件，`changes` 仅包含变更字段。
+
+示例：
+```json
+{ "action": "update", "id": "evt_xxx", "changes": { "title": "新标题" } }
+```
+
+## delete — 删除已有事件
+
+用于 Deduplication / 新事件使旧事件冗余的情况。
+仅需提供 `id`。
+
+示例：
+```json
+{ "action": "delete", "id": "evt_yyy" }
+```
+
+## add — 追加新事件
+
+用于新事件代表全新的状态变化。
+提供完整 `event` 对象（含 id）。
+
+示例：
+```json
+{ "action": "add", "event": { "id": "evt_new", "title": "...", "summary": "...", "importance": 5, "participants": [], "location": "", "tags": [] } }
+```
+
+## keep — 无操作
+
+可选，表示所有剩余事件无需变更。可省略。
+
+---
+
+仅返回 JSON 指令数组。
 
 不要返回 Markdown。
 
@@ -239,13 +279,10 @@
 
 格式：
 
+```json
 [
-{
-"title":"...",
-"summary":"...",
-"importance":5,
-"participants":[],
-"location":"",
-"tags":[]
-}
+  { "action": "update", "id": "evt_xxx", "changes": { "title": "..." } },
+  { "action": "delete", "id": "evt_yyy" },
+  { "action": "add", "event": { "id": "evt_new", "title": "...", "summary": "...", "importance": 5, "participants": [], "location": "", "tags": [] } }
 ]
+```

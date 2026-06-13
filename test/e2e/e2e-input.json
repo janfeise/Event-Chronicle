@@ -1,0 +1,41 @@
+{
+  "description": "E2E test: adventurer story across 3 message batches. Batch 1+2 should accumulate ≥5 events triggering auto-merge.",
+  "eventId": "test-e2e-story",
+  "batches": [
+    {
+      "name": "batch-1-start",
+      "description": "Adventurer starts journey — expect 2-3 events (below threshold)",
+      "messages": [
+        { "role": "冒险者", "content": "我终于攒够了钱，买了一把新的长剑。今天就要出发去北方雪山寻找传说中的寒冰洞穴。" },
+        { "role": "旅店老板", "content": "北方雪山很危险，记得带上足够的补给。我这里有些干粮和药水，你拿去吧。" },
+        { "role": "冒险者", "content": "谢谢你！那我带上这些补给。我准备好了，现在就出发。" },
+        { "role": "旅店老板", "content": "一路小心，听说最近雪山一带出现了不少野兽。" },
+        { "role": "冒险者", "content": "我已离开城镇，踏上了通往雪山的北方大道。" }
+      ]
+    },
+    {
+      "name": "batch-2-explore",
+      "description": "Exploring the雪山, encountering dangers — expect 3+ events (total should reach threshold)",
+      "messages": [
+        { "role": "冒险者", "content": "经过两天跋涉，我终于到达了雪山脚下的营地。这里有几个同样来探险的冒险者。" },
+        { "role": "猎人", "content": "嘿，新来的！我叫艾琳，是这里的猎人。你要上山的话最好找个伙伴，一个人太危险了。" },
+        { "role": "冒险者", "content": "你说得对。艾琳，你愿意和我一起上山吗？我可以付你报酬。" },
+        { "role": "艾琳", "content": "行，我对这一带很熟。我们明天一早上山。" },
+        { "role": "冒险者", "content": "我们进入了雪山的密林区域，四周都是高大的针叶树和厚厚的积雪。" },
+        { "role": "艾琳", "content": "小心！前面有一头冰霜狼！准备好你的武器！" },
+        { "role": "冒险者", "content": "我和艾琳合力击败了冰霜狼。我从狼的尸体上取下了它的獠牙，这是个不错的战利品。" },
+        { "role": "艾琳", "content": "干得好。你看那边——那应该就是你要找的寒冰洞穴入口了。" }
+      ]
+    },
+    {
+      "name": "batch-3-discovery",
+      "description": "Discovering the cave — expect 1-2 events (post-merge, continues chronicle)",
+      "messages": [
+        { "role": "冒险者", "content": "我们进入了寒冰洞穴。洞穴内部非常宽阔，墙壁上覆盖着厚厚的冰层，散发着淡蓝色的光芒。" },
+        { "role": "艾琳", "content": "这里好冷……你看洞穴尽头，那是什么？" },
+        { "role": "冒险者", "content": "洞穴深处有一个古老的冰封宝箱！我小心翼翼地打开了它——里面有一把散发着寒气的魔法剑！" },
+        { "role": "冒险者", "content": "我获得了寒冰魔法剑。这次的冒险目标达成了。我和艾琳决定返回营地。" }
+      ]
+    }
+  ]
+}

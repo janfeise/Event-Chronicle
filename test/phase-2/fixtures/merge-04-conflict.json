@@ -1,0 +1,27 @@
+{
+  "description": "冲突 — 相反决定都保留（状态变化链）",
+  "rule": "Conflict",
+  "existingEvents": [
+    {
+      "id": "evt_001",
+      "title": "决定参加编程比赛",
+      "summary": "用户决定参加下周的编程比赛",
+      "importance": 5,
+      "participants": ["用户"],
+      "location": "",
+      "tags": ["计划", "比赛"]
+    }
+  ],
+  "newEvents": [
+    {
+      "id": "evt_new_001",
+      "title": "取消参加编程比赛",
+      "summary": "用户因时间冲突取消参加编程比赛",
+      "importance": 5,
+      "participants": ["用户"],
+      "location": "",
+      "tags": ["计划取消", "比赛"]
+    }
+  ],
+  "expectedBehavior": "决定参加 → 取消参加 是两个独立状态变化，都应保留。最终 2 条"
+}

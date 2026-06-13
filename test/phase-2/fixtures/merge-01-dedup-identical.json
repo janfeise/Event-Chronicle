@@ -1,0 +1,27 @@
+{
+  "description": "去重 — 完全相同的事件只保留一条（保留信息更完整者）",
+  "rule": "Deduplication",
+  "existingEvents": [
+    {
+      "id": "evt_001",
+      "title": "用户开始学习Vue",
+      "summary": "用户开始学习Vue",
+      "importance": 4,
+      "participants": ["用户"],
+      "location": "",
+      "tags": ["学习"]
+    }
+  ],
+  "newEvents": [
+    {
+      "id": "evt_new_001",
+      "title": "开始学习Vue",
+      "summary": "开始学习Vue",
+      "importance": 4,
+      "participants": ["用户"],
+      "location": "",
+      "tags": ["学习"]
+    }
+  ],
+  "expectedBehavior": "应删除 newEvents 中的重复事件（现有事件信息更完整），最终仅保留 existing 1 条"
+}

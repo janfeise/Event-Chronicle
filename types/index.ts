@@ -45,14 +45,46 @@ export interface LLMConfig {
 /**
  * 从聊天中提取出的事件。
  *
- * 与 prompts/extract-event.md / prompts/merge-event.md 约定的 JSON 输出
- * 结构一致。
+ * id 由程序在提取后注入（非 LLM 生成），格式 `evt_{timestamp}_{random6hex}`。
+ * 其余字段与 prompts/extract-event.md / prompts/merge-event.md 约定的 JSON 输出结构一致。
  */
 export interface Event {
+  id: string;
   title: string;
   summary: string;
   importance: number;
   participants: string[];
   location: string;
   tags: string[];
+}
+
+// ---------------------------------------------------------------------------
+// 事件合并
+// ---------------------------------------------------------------------------
+
+/** 合并指令 —— LLM 输出的最小变更单元，程序据此批量修改已有数据 */
+export interface MergeInstruction {
+  action: "update" | "delete" | "add" | "keep";
+  /** update / delete 时必填 */
+  id?: string;
+  /** update 时填写变更字段（不含 id，id 不可变） */
+  changes?: Partial<Event>;
+  /** add 时填写完整新事件 */
+  event?: Event;
+}
+
+// ---------------------------------------------------------------------------
+// 导出
+// ---------------------------------------------------------------------------
+
+/** Memory Export 的可选配置 */
+export interface MemoryExportOptions {
+  /** 标题，默认 "Event Chronicle Memory" */
+  title?: string;
+  /** 重要事件高亮阈值（importance >= 该值的事件单独列出），默认 7 */
+  highlightThreshold?: number;
+  /** 是否包含时间线表格，默认 true */
+  includeTimeline?: boolean;
+  /** 分组依据，默认 "location" */
+  groupBy?: "location" | "tags" | "none";
 }
