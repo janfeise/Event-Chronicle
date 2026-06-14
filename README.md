@@ -6,6 +6,8 @@
   <a href="#"><img src="https://img.shields.io/badge/version-0.1.0-blue" alt="Version"></a>
   <a href="#"><img src="https://img.shields.io/badge/license-MIT-green" alt="License"></a>
   <a href="#"><img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen" alt="Node"></a>
+</p>
+<p align="center">
   <a href="https://janfeise.github.io/Event-Chronicle/">demo</a>
 </p>
 
