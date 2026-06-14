@@ -1,3 +1,4 @@
+import { logger } from "../logger";
 import type { MergeInstruction } from "../../types";
 
 /**
@@ -32,7 +33,7 @@ export function parseInstructions(response: string): MergeInstruction[] {
 
   return parsed.filter((item): item is MergeInstruction => {
     if (typeof item !== "object" || item === null) {
-      console.warn("[merge] Skipping non-object instruction:", item);
+      logger.warn("merge", "Skipping non-object instruction", { item });
       return false;
     }
 
@@ -45,7 +46,7 @@ export function parseInstructions(response: string): MergeInstruction[] {
       action !== "add" &&
       action !== "keep"
     ) {
-      console.warn(`[merge] Unknown action "${String(action)}", skipping`);
+      logger.warn("merge", "Unknown action, skipping", { action: String(action) });
       return false;
     }
 
@@ -53,9 +54,7 @@ export function parseInstructions(response: string): MergeInstruction[] {
       (action === "update" || action === "delete") &&
       typeof inst.id !== "string"
     ) {
-      console.warn(
-        `[merge] ${action} instruction missing valid id, skipping`,
-      );
+      logger.warn("merge", `${action} instruction missing valid id, skipping`);
       return false;
     }
 
@@ -63,9 +62,7 @@ export function parseInstructions(response: string): MergeInstruction[] {
       action === "update" &&
       (typeof inst.changes !== "object" || inst.changes === null)
     ) {
-      console.warn(
-        `[merge] update instruction missing changes object, skipping`,
-      );
+      logger.warn("merge", "update instruction missing changes object, skipping");
       return false;
     }
 
@@ -73,9 +70,7 @@ export function parseInstructions(response: string): MergeInstruction[] {
       action === "add" &&
       (typeof inst.event !== "object" || inst.event === null)
     ) {
-      console.warn(
-        `[merge] add instruction missing event object, skipping`,
-      );
+      logger.warn("merge", "add instruction missing event object, skipping");
       return false;
     }
 

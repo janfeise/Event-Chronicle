@@ -3,6 +3,7 @@ import promptManager from "../../prompts/manager";
 import { config } from "../../config";
 import { formatEvents, applyWindow } from "./formatter";
 import { parseInstructions } from "./parser";
+import { logger } from "../logger";
 import type { Event, MergeInstruction } from "../../types";
 
 // ---------------------------------------------------------------------------
@@ -76,10 +77,7 @@ export function applyInstructions(
   const map = new Map<string, Event>();
   for (const event of existingEvents) {
     if (!event.id) {
-      console.warn(
-        "[merge] Existing event missing id, generating fallback:",
-        event.title,
-      );
+      logger.warn("merge", "Existing event missing id, generating fallback", { title: event.title });
       event.id = generateFallbackId();
     }
     map.set(event.id, { ...event });
@@ -91,7 +89,7 @@ export function applyInstructions(
         if (!inst.id) break;
         const target = map.get(inst.id);
         if (!target) {
-          console.warn(`[merge] update target not found: ${inst.id}`);
+          logger.warn("merge", "update target not found", { id: inst.id });
           break;
         }
         if (inst.changes) {
@@ -105,7 +103,7 @@ export function applyInstructions(
       case "delete": {
         if (!inst.id) break;
         if (!map.has(inst.id)) {
-          console.warn(`[merge] delete target not found: ${inst.id}`);
+          logger.warn("merge", "delete target not found", { id: inst.id });
           break;
         }
         map.delete(inst.id);
@@ -116,15 +114,11 @@ export function applyInstructions(
         if (!inst.event) break;
         const event = { ...inst.event };
         if (!event.id) {
-          console.warn(
-            "[merge] add instruction event missing id, generating fallback",
-          );
+          logger.warn("merge", "add instruction event missing id, generating fallback");
           event.id = generateFallbackId();
         }
         if (map.has(event.id)) {
-          console.warn(
-            `[merge] Duplicate add for id ${event.id}, skipping`,
-          );
+          logger.warn("merge", "Duplicate add, skipping", { id: event.id });
           break;
         }
         map.set(event.id, event);

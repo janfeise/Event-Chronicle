@@ -19,6 +19,7 @@ import {
 } from "./store";
 import { mergeEvents } from "./merge";
 import { config } from "../config";
+import { logger } from "./logger";
 import type { ChatMessage, Event } from "../types";
 
 // ---------------------------------------------------------------------------
@@ -84,10 +85,17 @@ export async function processMessages(
   const existingEvents = loadChronicle(resolvedExistingId);
 
   // 2. 提取新事件
+  const extractStart = Date.now();
   const events = await extractEvents(
     messages,
     JSON.stringify(existingEvents),
   );
+  if (events.length > 0) {
+    logger.info("extract", "events extracted", {
+      count: events.length,
+      durationMs: Date.now() - extractStart,
+    });
+  }
 
   // 3. 计数器先于事件写入（方案 A）：
   //    若此处崩溃 → 计数器虚高，下次提前触发合并（无害）
@@ -108,17 +116,33 @@ export async function processMessages(
 
       if (state.newEventCount >= threshold) {
         // 4b. 触发合并：读全量 → LLM merge → 写合并结果
+        logger.info("core", "merge triggered", {
+          counter: state.newEventCount,
+          threshold,
+          eventId: resolvedEventId,
+        });
         const fullExisting = loadChronicle(resolvedEventId);
+        const mergeStart = Date.now();
         mergedEvents = await mergeEvents(fullExisting, events);
         mergedFile = saveChronicle(mergedEvents);
         resetMergeCounter(resolvedEventId);
         merged = true;
+        logger.info("core", "merge completed", {
+          before: fullExisting.length,
+          after: mergedEvents.length,
+          durationMs: Date.now() - mergeStart,
+          mergedFile,
+        });
       }
     }
   }
 
   // 5. 持久化事件（计数器之后写入，确保崩溃时计数器只多不少）
   const storedFile = appendEvents(events, resolvedEventId);
+  logger.info("store", "events stored", {
+    file: storedFile,
+    count: events.length,
+  });
 
   return { events, storedFile, merged, mergedFile, mergedEvents };
 }

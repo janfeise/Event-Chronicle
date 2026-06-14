@@ -11,6 +11,7 @@
 import { config } from "./config";
 import { initLLM, complete } from "./core/llm";
 import promptManager from "./prompts/manager";
+import { logger } from "./core/logger";
 import type { LLMConfig } from "./types";
 
 // ---------------------------------------------------------------------------
@@ -49,6 +50,7 @@ export async function startup(options: StartupOptions = {}): Promise<LLMConfig> 
   }
 
   log("✓", "配置加载完成");
+  logger.info("startup", "config loaded", { provider: llmConfig.provider, model: llmConfig.model });
 
   // ---- 2. 初始化 LLM 客户端 ----
   initLLM(llmConfig);
@@ -58,6 +60,7 @@ export async function startup(options: StartupOptions = {}): Promise<LLMConfig> 
   const names = promptManager.preload();
   if (names.length > 0) {
     log("✓", `提示词预热完成 (${names.length} 个): ${names.join(", ")}`);
+    logger.info("startup", "prompts preloaded", { count: names.length, names });
   } else {
     log("⚠", "未发现任何提示词 .md 文件");
   }
@@ -70,6 +73,7 @@ export async function startup(options: StartupOptions = {}): Promise<LLMConfig> 
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       log("✗", `LLM 健康检查失败: ${message}`);
+      logger.error("startup", "LLM health check failed", { error: message });
       throw new Error(
         `LLM 连通性验证失败。请检查 .env 中的 LLM_API_KEY / LLM_BASE_URL / LLM_MODEL 是否正确。\n` +
           `原始错误: ${message}`,
@@ -133,6 +137,7 @@ const isMain =
 if (isMain) {
   startup().catch((err) => {
     console.error(`${PREFIX} ❌ 启动失败:`, err instanceof Error ? err.message : err);
+    logger.error("startup", "fatal startup error", { error: err instanceof Error ? err.message : String(err) });
     process.exit(1);
   });
 }
