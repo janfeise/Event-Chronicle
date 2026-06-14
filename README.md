@@ -314,7 +314,7 @@ await startup({
 
 | 资源 | 说明 |
 |---|---|
-| [Web Demo](./demo-web/) | 浏览器交互式 Demo，分裂面板 UI，支持真实 SDK 调用 |
+| [Web Demo](./docs/) | 浏览器交互式 Demo，分裂面板 UI，支持真实 SDK 调用 |
 | [CLI Demo](./demo/) | 6 轮 RPG 对话的完整端到端示例 |
 | [SDK 封装指南](./docs/sdk-guide.md) | 从零封装 SDK 的新手教程 |
 | [开发文档](./docs/development.md) | 项目架构、模块说明、Prompt 系统 |

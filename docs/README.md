@@ -18,7 +18,7 @@
 ### 1. 启动后端
 
 ```bash
-cd demo-web
+cd docs
 npm install
 cp .env.example .env    # 编辑 .env 填入你的 LLM_API_KEY
 npm run dev
