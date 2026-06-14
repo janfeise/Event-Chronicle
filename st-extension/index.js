@@ -70,19 +70,27 @@ function buildLLMConfig() {
   let stApiKey = '';
   let stModel = 'gpt-4o-mini';
 
-  // Try to read from ST globals
   try {
+    // 读取 ST 全局配置
     if (typeof oai_settings !== 'undefined') {
       stBaseUrl = oai_settings.reverse_proxy || stBaseUrl;
       stModel = oai_settings.model || stModel;
     }
     if (typeof main_api !== 'undefined') stProvider = main_api || stProvider;
-    if (typeof SECRET_KEYS !== 'undefined' && SECRET_KEYS.OPENAI) stApiKey = SECRET_KEYS.OPENAI;
-  } catch (e) { /* not in ST */ }
 
-  if (!stApiKey && typeof process !== 'undefined' && process.env) {
-    stApiKey = process.env.OPENAI_API_KEY || '';
-  }
+    // 尝试多个可能的 API Key 来源（ST 不同版本存储位置不同）
+    if (typeof SECRET_KEYS !== 'undefined') {
+      // ST 新版：SECRET_KEYS 按提供商 keyed
+      const key = SECRET_KEYS[stProvider.toUpperCase()] || SECRET_KEYS.OPENAI || SECRET_KEYS[Object.keys(SECRET_KEYS)[0]];
+      if (key) stApiKey = key;
+    }
+    if (!stApiKey && typeof secrets !== 'undefined') {
+      stApiKey = secrets[stProvider] || secrets[Object.keys(secrets)[0]] || '';
+    }
+    if (!stApiKey && typeof power_user !== 'undefined' && power_user.api_key) {
+      stApiKey = power_user.api_key;
+    }
+  } catch (e) { /* 不在 ST 上下文 */ }
 
   return {
     provider: override.provider || stProvider,
@@ -311,6 +319,99 @@ globalThis.EventChronicle = EventChronicleAPI;
 if (typeof window !== 'undefined') window.EventChronicle = EventChronicleAPI;
 
 // ---------------------------------------------------------------------------
+// Wand menu — inject UI entry into ST's extensions menu
+// ---------------------------------------------------------------------------
+
+function registerWandMenu() {
+  // ST's wand menu container
+  const menu = document.getElementById('extensionsMenu');
+  if (!menu) {
+    setTimeout(registerWandMenu, 1000);
+    return;
+  }
+
+  // Don't duplicate
+  if (document.getElementById('ec_wand_container')) return;
+
+  const status = sdkReady ? '🟢 就绪' : '⚪ 待配置';
+  const html = `
+    <div id="ec_wand_container" class="extension_container">
+      <div class="list-group-item flex-container flexGap5" style="cursor:pointer;"
+           title="Event Chronicle · 事件编年史">
+        <div class="extensionsMenuExtensionButton" style="color:#ffd700;">📜</div>
+        <span>Event Chronicle <small style="color:#888;">${status}</small></span>
+      </div>
+      <div id="ec_wand_buttons" style="display:none; padding: 8px 12px; background:#1a1a2e;">
+        <button id="ec_btn_settings" class="menu_button"
+                style="display:block;width:100%;margin-bottom:6px;">
+          ⚙ 设置
+        </button>
+        <button id="ec_btn_timeline" class="menu_button"
+                style="display:block;width:100%;margin-bottom:6px;">
+          📋 时间线浏览器
+        </button>
+        <button id="ec_btn_extract" class="menu_button"
+                style="display:block;width:100%;">
+          🔍 手动提取事件
+        </button>
+      </div>
+    </div>`;
+
+  menu.insertAdjacentHTML('beforeend', html);
+
+  // Toggle submenu on click
+  const header = document.querySelector('#ec_wand_container .list-group-item');
+  const buttons = document.getElementById('ec_wand_buttons');
+  if (header && buttons) {
+    header.addEventListener('click', () => {
+      buttons.style.display = buttons.style.display === 'none' ? 'block' : 'none';
+    });
+  }
+
+  // Button handlers
+  const btnSettings = document.getElementById('ec_btn_settings');
+  const btnTimeline = document.getElementById('ec_btn_timeline');
+  const btnExtract = document.getElementById('ec_btn_extract');
+
+  if (btnSettings) {
+    btnSettings.addEventListener('click', (e) => {
+      e.stopPropagation();
+      // Open ST's extension settings panel for Event Chronicle
+      try {
+        if (typeof openExtensionSettings === 'function') {
+          openExtensionSettings('event-chronicle');
+        } else {
+          // Fallback: open settings HTML directly
+          window.open('/extensions/Event-Chronicle/st-extension/settings/settings.html', '_blank');
+        }
+      } catch (_) {
+        window.open('/extensions/Event-Chronicle/st-extension/settings/settings.html', '_blank');
+      }
+    });
+  }
+
+  if (btnTimeline) {
+    btnTimeline.addEventListener('click', (e) => {
+      e.stopPropagation();
+      window.open('/extensions/Event-Chronicle/st-extension/event-ui/timeline.html', '_blank');
+    });
+  }
+
+  if (btnExtract) {
+    btnExtract.addEventListener('click', (e) => {
+      e.stopPropagation();
+      triggerExtraction().then(() => {
+        showToast('info', '事件提取完成');
+      }).catch(err => {
+        showToast('error', '提取失败: ' + err.message);
+      });
+    });
+  }
+
+  console.log('[Event Chronicle] Wand 菜单已注册');
+}
+
+// ---------------------------------------------------------------------------
 // Hook registration (ST event system)
 // ---------------------------------------------------------------------------
 
@@ -337,6 +438,7 @@ function registerHooks() {
 try {
   init().then(() => {
     registerHooks();
+    registerWandMenu();
     console.log('[Event Chronicle] ✅ 扩展就绪');
   }).catch(err => {
     console.error('═══════════════════════════════════════════');
