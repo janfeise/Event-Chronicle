@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import { resolveDataDir } from "./loadChronicle";
+import { getDataDir } from "./runtimeContext";
 import type { Event } from "../../types";
 
 /**
@@ -13,7 +13,7 @@ import type { Event } from "../../types";
  * @returns 生成的文件名
  */
 export function saveChronicle(events: Event[]): string {
-  const dataDir = resolveDataDir();
+  const dataDir = getDataDir();
   ensureDir(dataDir);
 
   const filename = `event_${Date.now()}.json`;

@@ -12,6 +12,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
+import { getDataDir } from "../store/runtimeContext";
 
 // ---------------------------------------------------------------------------
 // 类型
@@ -72,7 +73,7 @@ function writeToFile(line: string): void {
   if (!logToFile) return;
 
   try {
-    const dir = path.resolve(process.cwd(), "data", "logs");
+    const dir = path.resolve(getDataDir(), "logs");
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }

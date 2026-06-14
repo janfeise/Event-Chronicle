@@ -8,9 +8,10 @@
 //   4. 健康检查（可选，默认开启）
 // =============================================================================
 
-import { config } from "./config";
+import { config, loadEnv } from "./config";
 import { initLLM, complete } from "./core/llm";
 import promptManager from "./prompts/manager";
+import { setDataDir } from "./core/store/runtimeContext";
 import { logger } from "./core/logger";
 import type { LLMConfig } from "./types";
 
@@ -21,6 +22,24 @@ import type { LLMConfig } from "./types";
 export interface StartupOptions {
   /** 是否执行 LLM 健康检查，默认 true */
   healthCheck?: boolean;
+
+  /**
+   * 直接传入 LLM 配置（优先级高于 .env / process.env）。
+   * 传入时完全跳过 env 读取，适合纯代码配置场景。
+   */
+  llmConfig?: LLMConfig;
+
+  /**
+   * 自定义数据存储目录。
+   * 默认：process.cwd() + "/data"
+   */
+  dataDir?: string;
+
+  /**
+   * 自定义提示词 .md 文件目录。
+   * 默认：自动检测（开发模式使用源码目录，构建后使用 dist/prompts/）
+   */
+  promptsDir?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -32,16 +51,37 @@ export async function startup(options: StartupOptions = {}): Promise<LLMConfig> 
 
   logBanner();
 
+  // ---- 0. 运行时路径配置（必须在任何 I/O 之前） ----
+  if (options.dataDir) {
+    setDataDir(options.dataDir);
+    logger.info("startup", "dataDir overridden", { dataDir: options.dataDir });
+  }
+
+  if (options.promptsDir) {
+    promptManager.reinitialize(options.promptsDir);
+    logger.info("startup", "promptsDir overridden", { promptsDir: options.promptsDir });
+  }
+
   // ---- 1. 加载配置 ----
-  const llmConfig: LLMConfig = {
-    provider: config.llm.provider,
-    baseUrl: config.llm.baseUrl,
-    apiKey: config.llm.apiKey,
-    model: config.llm.model,
-    temperature: config.llm.temperature,
-    maxTokens: config.llm.maxTokens,
-    timeout: config.llm.timeout,
-  };
+  // 显式传入的 llmConfig 优先级最高，否则从 env 读取
+  let llmConfig: LLMConfig;
+
+  if (options.llmConfig) {
+    llmConfig = { ...options.llmConfig };
+    logger.info("startup", "using explicit llmConfig", { provider: llmConfig.provider });
+  } else {
+    // 加载 .env 到 process.env，再由 config 读取
+    loadEnv();
+    llmConfig = {
+      provider: config.llm.provider,
+      baseUrl: config.llm.baseUrl,
+      apiKey: config.llm.apiKey,
+      model: config.llm.model,
+      temperature: config.llm.temperature,
+      maxTokens: config.llm.maxTokens,
+      timeout: config.llm.timeout,
+    };
+  }
 
   if (!llmConfig.apiKey) {
     throw new Error(
@@ -125,19 +165,3 @@ function logBannerEnd(): void {
   console.log(`${PREFIX} 🚀 启动完成，可以开始提取事件\n`);
 }
 
-// ---------------------------------------------------------------------------
-// 直接运行入口（`npx tsx index.ts` 或 `node index.js`）
-// ---------------------------------------------------------------------------
-
-const isMain =
-  process.argv[1] &&
-  (process.argv[1].replace(/\\/g, "/").endsWith("/index.ts") ||
-    process.argv[1].replace(/\\/g, "/").endsWith("/index.js"));
-
-if (isMain) {
-  startup().catch((err) => {
-    console.error(`${PREFIX} ❌ 启动失败:`, err instanceof Error ? err.message : err);
-    logger.error("startup", "fatal startup error", { error: err instanceof Error ? err.message : String(err) });
-    process.exit(1);
-  });
-}

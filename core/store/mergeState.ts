@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import { resolveDataDir } from "./loadChronicle";
+import { getDataDir } from "./runtimeContext";
 import { ensureDir } from "./saveChronicle";
 
 // ---------------------------------------------------------------------------
@@ -77,5 +77,5 @@ export function resetMergeCounter(eventId: string): MergeState {
 // ---------------------------------------------------------------------------
 
 function stateFilePath(eventId: string): string {
-  return path.join(resolveDataDir(), `${eventId}_state.json`);
+  return path.join(getDataDir(), `${eventId}_state.json`);
 }

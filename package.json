@@ -1,9 +1,53 @@
 {
+  "name": "event-chronicle",
+  "version": "0.1.2",
+  "description": "从 AI 对话中提取事件，构建可视编年史，形成长期记忆",
+  "license": "MIT",
+  "author": "Tilex",
+  "keywords": [
+    "ai",
+    "memory",
+    "chronicle",
+    "llm",
+    "chat",
+    "events"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/janfeise/Event-Chronicle"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "prompts/*.md",
+    "img/Event-Chronicle logo.png",
+    "img/demo-02.png",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublishOnly": "npm run build"
+  },
   "dependencies": {
     "dotenv": "^17.4.2",
     "openai": "^6.42.0"
   },
   "devDependencies": {
-    "@types/node": "^25.9.3"
+    "@types/node": "^25.9.3",
+    "tsup": "^8.0.0",
+    "typescript": "^5.5.0"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

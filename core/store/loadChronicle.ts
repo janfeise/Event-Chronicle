@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
+import { getDataDir } from "./runtimeContext";
 import type { Event } from "../../types";
 
 /**
@@ -18,7 +19,7 @@ export function loadChronicle(existingEventId?: string): Event[] {
     return [];
   }
 
-  const dataDir = resolveDataDir();
+  const dataDir = getDataDir();
   const filePath = path.join(dataDir, `${existingEventId}.json`);
 
   if (!fs.existsSync(filePath)) {
@@ -45,15 +46,3 @@ export function loadChronicle(existingEventId?: string): Event[] {
 
   return parsed as Event[];
 }
-
-// ---------------------------------------------------------------------------
-// 内部
-// ---------------------------------------------------------------------------
-
-/** data/ 目录的绝对路径 */
-function resolveDataDir(): string {
-  return path.resolve(process.cwd(), "data");
-}
-
-/** 供同模块其他文件使用 */
-export { resolveDataDir };

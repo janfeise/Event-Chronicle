@@ -23,7 +23,7 @@ export class PromptManager {
   private cache: Map<string, string> = new Map();
 
   // 提示词 .md 文件所在目录的绝对路径
-  private readonly promptsDir: string;
+  private promptsDir: string;
 
   constructor(promptsDir?: string) {
     this.promptsDir = promptsDir ?? path.resolve(__dirname);
@@ -107,6 +107,20 @@ export class PromptManager {
     } else {
       this.cache.clear();
     }
+  }
+
+  /**
+   * 重新初始化：切换到新的提示词目录并清空缓存。
+   *
+   * 适用场景：
+   *   - SDK 使用者通过 startup({ promptsDir }) 自定义提示词路径
+   *   - 运行时动态切换提示词来源
+   *
+   * @param promptsDir - 新的提示词 .md 文件目录绝对路径
+   */
+  reinitialize(promptsDir: string): void {
+    this.promptsDir = path.resolve(promptsDir);
+    this.cache.clear();
   }
 
   /**

@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { config } from "../../config";
-import { resolveDataDir } from "./loadChronicle";
+import { getDataDir } from "./runtimeContext";
 import { ensureDir } from "./saveChronicle";
 import type { Event } from "../../types";
 
@@ -25,7 +25,7 @@ import type { Event } from "../../types";
  * @returns 实际写入的文件名
  */
 export function appendEvents(newEvents: Event[], eventId?: string): string {
-  const dataDir = resolveDataDir();
+  const dataDir = getDataDir();
   ensureDir(dataDir);
 
   // 三级降级获取 event_id
