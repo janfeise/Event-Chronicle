@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Event Chronicle Demo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ============================================================ -->
+  <!-- 顶部状态栏 -->
+  <!-- ============================================================ -->
+  <header id="top-bar">
+    <div id="status-area">
+      <span id="status-dot"></span>
+      <span id="status-text">检测后端...</span>
+    </div>
+    <div id="top-bar-right">
+      <span id="dev-hint" class="hidden">
+        后端未连接 — 请在终端运行 <code>cd demo-web &amp;&amp; npm run dev</code>
+      </span>
+      <button id="btn-reset" title="还原预设数据">↻ 还原预设</button>
+      <button id="btn-settings" title="设置 API Key">⚙</button>
+    </div>
+  </header>
+
+  <!-- ============================================================ -->
+  <!-- 主面板 -->
+  <!-- ============================================================ -->
+  <main id="main-pane">
+
+    <!-- ==================== 左：对话面板 ==================== -->
+    <section id="chat-column">
+      <div id="chat-header">
+        <div id="logo-area">
+          <div id="logo-box"><span>EC</span></div>
+          <div id="brand">
+            <div id="brand-title">Event Chronicle</div>
+            <div id="brand-subtitle">Timeline-based Memory Engine</div>
+          </div>
+        </div>
+        <button id="btn-clear" title="清除对话">🗑</button>
+      </div>
+
+      <div id="messages-box">
+        <!-- 消息由 JS 动态渲染 -->
+      </div>
+
+      <div id="loading-area" class="hidden">
+        <div class="spinner"></div>
+        <span id="loading-text">正在提取事件并更新编年史...</span>
+      </div>
+
+      <div id="error-area" class="hidden">
+        <span>⚠</span>
+        <span id="error-text"></span>
+      </div>
+
+      <form id="composer" autocomplete="off">
+        <input
+          id="message-input"
+          type="text"
+          placeholder="输入消息，例如：我的猫最近不太舒服…"
+          maxlength="500"
+        />
+        <button id="btn-send" type="submit">发送</button>
+      </form>
+    </section>
+
+    <!-- ==================== 右：时间线面板 ==================== -->
+    <section id="timeline-column">
+      <div id="timeline-header">
+        <div id="timeline-title-area">
+          <span id="timeline-icon">📅</span>
+          <span id="timeline-title-text">事件提取与时间线</span>
+          <span id="event-count-badge">0 个事件</span>
+        </div>
+        <button id="btn-toggle-add" title="手动添加事件">+</button>
+      </div>
+
+      <div id="timeline-body">
+        <!-- 手动添加事件表单 -->
+        <div id="add-event-panel" class="hidden">
+          <input id="form-add-title" type="text" placeholder="事件标题" maxlength="60" />
+          <select id="form-add-tag">
+            <option value="">选择分类</option>
+            <option value="宠物">宠物</option>
+            <option value="健康">健康</option>
+            <option value="情感">情感</option>
+            <option value="建议">建议</option>
+            <option value="日常">日常</option>
+            <option value="其他">其他</option>
+          </select>
+          <input id="form-add-time" type="text" placeholder="时间（如 10:30）" maxlength="5" />
+          <textarea id="form-add-desc" rows="2" placeholder="事件描述" maxlength="200"></textarea>
+          <button id="btn-submit-add">✓ 添加</button>
+        </div>
+
+        <!-- 空状态 -->
+        <div id="empty-state">
+          <span id="empty-icon">📋</span>
+          <p>暂无事件。发送消息后，AI 将自动提取并显示在此处。</p>
+        </div>
+
+        <!-- 时间线 -->
+        <div id="timeline-axis-wrap">
+          <div id="timeline-axis"></div>
+          <div id="timeline-cards">
+            <!-- 事件卡片由 JS 动态渲染 -->
+          </div>
+        </div>
+      </div>
+
+      <footer id="timeline-footer">
+        Event Chronicle Demo · Timeline-based Memory
+      </footer>
+    </section>
+
+  </main>
+</div>
+
+<!-- API Key 设置弹窗 -->
+<div id="settings-overlay" class="hidden">
+  <div id="settings-modal">
+    <h2>设置 API Key</h2>
+    <p>API Key 仅保存在当前浏览器标签页中，关闭标签页后自动清除。</p>
+    <input id="settings-api-key" type="password" placeholder="sk-..." />
+    <div id="settings-actions">
+      <button id="btn-settings-save">保存</button>
+      <button id="btn-settings-cancel">取消</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

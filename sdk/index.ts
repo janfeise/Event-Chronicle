@@ -54,8 +54,8 @@ export { exportRawFromEvents, exportMemoryFromEvents } from "../core/exporter";
 // 第三层：底层 API
 // ---------------------------------------------------------------------------
 
-// LLM 客户端（手动初始化）
-export { initLLM } from "../core/llm";
+// LLM 客户端（手动初始化 + 直接调用）
+export { initLLM, complete } from "../core/llm";
 
 // 合并状态追踪
 export { loadMergeState, resetMergeCounter } from "../core/store";

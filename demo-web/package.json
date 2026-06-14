@@ -1,0 +1,25 @@
+{
+  "name": "event-chronicle-demo-web",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Event Chronicle Web Demo — 浏览器交互式 Demo",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx server.ts",
+    "build": "tsup server.ts --format esm --external event-chronicle --external express --external cors --external dotenv --external fs --external path --out-dir dist",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.4.2",
+    "event-chronicle": "file:..",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^25.9.3",
+    "tsx": "^4.21.0",
+    "typescript": "^5.5.0"
+  }
+}
