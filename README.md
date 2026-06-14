@@ -67,34 +67,77 @@ npm install event-chronicle
 
 ## Quick Start
 
-在项目根目录创建 `.env` 文件：
+在项目中安装依赖 `event-chronicle`：
 
 ```bash
-echo 'LLM_API_KEY=sk-your-api-key-here' > .env
+npm install event-chronicle
+npm install -D tsx          # TypeScript 运行器，也可用 node + .js
 ```
+
+配置 API Key：创建 `.env` 文件，填入你的 LLM API Key：
+
+> 支持的 LLM 提供商：OpenAI、DeepSeek、以及任何兼容 OpenAI API 格式的服务
+
+```env
+LLM_API_KEY=sk-your-api-key-here
+```
+
+创建 `chronicle.ts`：
 
 ```ts
 import { startup, processMessages, exportMemory } from "event-chronicle";
 
-// 1. 初始化（自动加载 .env → 初始化 LLM → 预热提示词 → 健康检查）
-await startup();
+async function main() {
+  // 1. 初始化（自动加载 .env → 初始化 LLM → 预热提示词 → 健康检查）
+  await startup();
 
-// 2. 处理对话 —— 提取事件、自动持久化、达到阈值自动合并
-const result = await processMessages(
-  [
-    { role: "小明", content: "周末去爬西山吧！" },
-    { role: "小红", content: "好啊，叫上小刚一起。" },
-  ],
-  { eventId: "my-story" },
-);
+  // 2. 处理对话 —— 提取事件、自动持久化、达到阈值自动合并
+  const result = await processMessages(
+    [
+      { role: "小明", content: "周末去爬西山吧！" },
+      { role: "小红", content: "好啊，叫上小刚一起。" },
+    ],
+    { eventId: "my-story" },
+  );
 
-console.log(result.events);     // 提取的事件数组
-console.log(result.storedFile); // "my-story.json"
-console.log(result.merged);     // 是否触发了自动合并
+  console.log("提取事件:", result.events.length, "条");
+  console.log("存储文件:", result.storedFile);
+  console.log("触发合并:", result.merged);
 
-// 3. 导出为 LLM 上下文（可直接作为 system prompt 注入）
-const memory = exportMemory("my-story");
+  // 3. 导出为 LLM 上下文（可直接作为 system prompt 注入下次对话）
+  const memory = exportMemory("my-story");
+  console.log(memory);
+}
+
+main();
 ```
+
+运行：
+
+```bash
+npx tsx chronicle.ts
+```
+
+预期输出：生成的数据将保存在项目 `data/`  目录下
+
+```
+╔══════════════════════════════════════════╗
+║          Event Chronicle 启动…           ║
+╚══════════════════════════════════════════╝
+[Event Chronicle] ✓  LLM 健康检查通过
+[Event Chronicle] 🚀 启动完成
+
+提取事件: 1 条
+存储文件: my-story.json
+触发合并: false
+
+# Event Chronicle Memory
+## Summary
+1 events · importance range 6–6
+...
+```
+
+> 💡 完整 Demo（6 轮 RPG 对话、自动合并触发）见 [`demo/`](./demo/)。
 
 ---
 

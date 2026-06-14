@@ -18,6 +18,31 @@
 import * as fs from "fs";
 import * as path from "path";
 
+// ---------------------------------------------------------------------------
+// 自动检测提示词目录
+// ---------------------------------------------------------------------------
+
+/**
+ * 自动检测提示词 .md 文件所在目录。
+ *
+ * 开发环境：manager.ts 位于 prompts/ 目录，__dirname 即 prompts/。
+ * npm 发布后：代码打包到 dist/index.js，__dirname 为 dist/，
+ *            .md 文件在 dist/prompts/ 子目录中。
+ *
+ * 策略：优先检测 __dirname/prompts/（生产），否则回退到 __dirname（开发）。
+ */
+function detectPromptsDir(): string {
+  // 生产环境：dist/prompts/ 存在且有 .md 文件
+  const prodCandidate = path.resolve(__dirname, "prompts");
+  if (fs.existsSync(prodCandidate)) {
+    const hasMd = fs.readdirSync(prodCandidate).some((f) => f.endsWith(".md"));
+    if (hasMd) return prodCandidate;
+  }
+
+  // 开发环境：__dirname 本身就是 prompts/ 目录
+  return path.resolve(__dirname);
+}
+
 export class PromptManager {
   // 内存缓存：promptName → 文件原始内容
   private cache: Map<string, string> = new Map();
@@ -26,7 +51,7 @@ export class PromptManager {
   private promptsDir: string;
 
   constructor(promptsDir?: string) {
-    this.promptsDir = promptsDir ?? path.resolve(__dirname);
+    this.promptsDir = promptsDir ?? detectPromptsDir();
   }
 
   // ---------------------------------------------------------------------------
