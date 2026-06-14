@@ -192,3 +192,13 @@ promptManager.get("extract-event")
 promptManager.getWithVars("extract-event", { recentMessages: "..." })
   → 获取缓存内容 → 替换 {{recentMessages}} → 返回
 ```
+
+---
+
+## 相关文档
+
+| 文档 | 说明 |
+|------|------|
+| [ST 扩展插件开发文档](./st-extension-dev.md) | SillyTavern 适配层架构、设计决策、开发工作流 |
+| [ST 插件设计文档](./st-plugin-guide.md) | 插件功能设计与配置项详解 |
+| [SDK 封装指南](./sdk-guide.md) | 从零封装 SDK 的新手教程 |
