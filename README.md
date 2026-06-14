@@ -73,7 +73,7 @@ npm install event-chronicle
 在 SillyTavern 扩展管理中，粘贴以下 URL 即可安装：
 
 ```
-https://github.com/janfeise/Event-Chronicle/tree/st-extension
+https://github.com/janfeise/Event-Chronicle
 ```
 
 功能：自动从角色扮演对话中提取事件 → 构建编年史时间线 → 注入长期记忆。详情见 [ST 插件设计文档](./docs/st-plugin-guide.md)。
