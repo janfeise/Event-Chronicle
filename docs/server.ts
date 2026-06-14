@@ -144,18 +144,34 @@ app.get("/api/status", (_req, res) => {
 // ---- POST /api/process ----
 app.post("/api/process", async (req, res) => {
   try {
-    const { messages, apiKey } = req.body as {
+    const { messages, apiKey, baseUrl, model } = req.body as {
       messages?: { role: string; content: string; time?: string }[];
       apiKey?: string;
+      baseUrl?: string;
+      model?: string;
     };
 
     if (!messages || !Array.isArray(messages)) {
       return res.status(400).json({ error: "messages array is required" });
     }
 
-    // 如果前端传了 API Key，重新初始化
+    // 如果前端传了配置，重新初始化 LLM
     if (apiKey) {
-      await initSDK(apiKey);
+      const llmConfig: {
+        provider: string;
+        baseUrl: string;
+        apiKey: string;
+        model: string;
+      } = {
+        provider: "openai",
+        baseUrl: baseUrl || process.env.LLM_BASE_URL || "https://api.openai.com/v1",
+        apiKey: apiKey,
+        model: model || process.env.LLM_MODEL || "gpt-4o",
+      };
+      initLLM(llmConfig);
+      llmProvider = llmConfig.provider;
+      llmModel = llmConfig.model;
+      sdkReady = true;
     }
 
     if (!sdkReady) {

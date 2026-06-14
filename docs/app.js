@@ -162,15 +162,6 @@ const SANDBOX_KEYWORDS = [
   },
 ];
 
-const TAG_ICONS = {
-  宠物: "🐱",
-  健康: "💚",
-  情感: "💜",
-  建议: "💡",
-  日常: "📅",
-  其他: "📌",
-};
-
 // ===========================================================================
 // 2. 状态
 // ===========================================================================
@@ -184,8 +175,6 @@ const state = {
   backendProvider: "",
   backendModel: "",
   errorMessage: "",
-  showAddEvent: false,
-  editingEventId: null,
 };
 
 // ===========================================================================
@@ -209,16 +198,13 @@ function cacheDom() {
   dom.eventCountBadge = document.getElementById("event-count-badge");
   dom.timelineCards = document.getElementById("timeline-cards");
   dom.emptyState = document.getElementById("empty-state");
-  dom.addEventPanel = document.getElementById("add-event-panel");
-  dom.btnToggleAdd = document.getElementById("btn-toggle-add");
-  dom.formAddTitle = document.getElementById("form-add-title");
-  dom.formAddTag = document.getElementById("form-add-tag");
-  dom.formAddTime = document.getElementById("form-add-time");
-  dom.formAddDesc = document.getElementById("form-add-desc");
-  dom.btnSubmitAdd = document.getElementById("btn-submit-add");
   dom.settingsOverlay = document.getElementById("settings-overlay");
   dom.settingsApiKey = document.getElementById("settings-api-key");
+  dom.settingsBaseUrl = document.getElementById("settings-base-url");
+  dom.settingsModel = document.getElementById("settings-model");
   dom.timelineAxisWrap = document.getElementById("timeline-axis-wrap");
+  dom.connectOverlay = document.getElementById("connect-overlay");
+  dom.btnCopyAll = document.getElementById("btn-copy-all");
 }
 
 // ===========================================================================
@@ -268,74 +254,18 @@ function renderTimeline() {
 
   let html = "";
   for (const evt of state.events) {
-    const editing = state.editingEventId === evt.id;
-    html += '<div class="evt-card' + (editing ? " editing" : "") + '">';
-
-    // 显示模式
-    html += '<div class="evt-card-display">';
+    html += '<div class="evt-card">';
     html += '<div class="evt-card-top">';
     html += '<span class="evt-card-title">' + esc(evt.title) + "</span>";
     html += '<span class="evt-card-time">' + esc(evt.time) + "</span>";
     html += "</div>";
     html += '<div class="evt-card-desc">' + esc(evt.description) + "</div>";
-    const tagIcon = TAG_ICONS[evt.tag] || TAG_ICONS["其他"];
     html +=
       '<span class="evt-card-tag tag-' +
       tagClass(evt.tag) +
       '">' +
-      tagIcon +
-      " " +
       esc(evt.tag) +
       "</span>";
-    html += '<div class="evt-card-actions">';
-    html +=
-      "<button onclick=\"startEdit('" + evt.id + '\')" title="编辑">✎</button>';
-    html +=
-      "<button onclick=\"deleteEvent('" +
-      evt.id +
-      '\')" title="删除">🗑</button>';
-    html += "</div></div>";
-
-    // 编辑模式
-    html += '<div class="evt-card-edit">';
-    html +=
-      '<input id="edit-title-' +
-      evt.id +
-      '" value="' +
-      escAttr(evt.title) +
-      '" placeholder="标题" />';
-    html += '<select id="edit-tag-' + evt.id + '">';
-    for (const t of ["宠物", "健康", "情感", "建议", "日常", "其他"]) {
-      html +=
-        '<option value="' +
-        t +
-        '"' +
-        (evt.tag === t ? " selected" : "") +
-        ">" +
-        t +
-        "</option>";
-    }
-    html += "</select>";
-    html +=
-      '<input id="edit-time-' +
-      evt.id +
-      '" value="' +
-      escAttr(evt.time) +
-      '" placeholder="时间" />';
-    html +=
-      '<textarea id="edit-desc-' +
-      evt.id +
-      '" rows="2">' +
-      esc(evt.description) +
-      "</textarea>";
-    html += '<div class="edit-actions">';
-    html += '<button onclick="cancelEdit()">取消</button>';
-    html +=
-      '<button class="btn-save" onclick="saveEdit(\'' +
-      evt.id +
-      "')\">✓ 保存</button>";
-    html += "</div></div>";
-
     html += "</div>";
   }
   dom.timelineCards.innerHTML = html;
@@ -357,12 +287,15 @@ function tagClass(tag) {
   return map[tag] || "other";
 }
 
+let firstCheckDone = false;
+
 function renderStatus(ok, configured, provider, model) {
   dom.statusDot.classList.remove("ok", "warn");
   if (configured) {
     dom.statusDot.classList.add("ok");
     dom.statusText.textContent = "后端已连接 · " + provider + " / " + model;
     dom.devHint.classList.add("hidden");
+    dom.connectOverlay.classList.add("hidden");
   } else if (ok) {
     dom.statusDot.classList.add("warn");
     dom.statusText.textContent = "后端已连接 · 未配置 API Key";
@@ -370,7 +303,12 @@ function renderStatus(ok, configured, provider, model) {
   } else {
     dom.statusText.textContent = "后端未连接 · 使用沙盒模式";
     dom.devHint.classList.remove("hidden");
+    // 首次检测后端未连接时，弹出引导
+    if (!firstCheckDone) {
+      dom.connectOverlay.classList.remove("hidden");
+    }
   }
+  firstCheckDone = true;
   state.backendOk = ok;
   state.backendConfigured = configured;
 }
@@ -393,8 +331,12 @@ async function checkStatus() {
 
 async function processWithBackend(messages) {
   const apiKey = sessionStorage.getItem("ec_api_key");
+  const baseUrl = sessionStorage.getItem("ec_base_url");
+  const model = sessionStorage.getItem("ec_model");
   const body = { messages };
   if (apiKey) body.apiKey = apiKey;
+  if (baseUrl) body.baseUrl = baseUrl;
+  if (model) body.model = model;
 
   const res = await fetch(BACKEND_URL + "/api/process", {
     method: "POST",
@@ -476,7 +418,8 @@ async function onSend(e) {
       newEvents = result.events;
     } else {
       // 沙盒模式
-      reply = sandboxReply(text);
+      reply =
+        sandboxReply(text) + "（静态，沙盒模拟回复，非真实 llm api 调用）";
       const evt = sandboxExtractEvent(text);
       newEvents = evt ? [evt] : [];
     }
@@ -556,85 +499,12 @@ function onReset() {
   renderError();
 }
 
-function onToggleAdd() {
-  state.showAddEvent = !state.showAddEvent;
-  dom.addEventPanel.classList.toggle("hidden", !state.showAddEvent);
-}
-
-function onSubmitAdd(e) {
-  e.preventDefault();
-  const title = dom.formAddTitle.value.trim();
-  const tag = dom.formAddTag.value;
-  const time = dom.formAddTime.value.trim() || now();
-  const desc = dom.formAddDesc.value.trim();
-  if (!title || !tag) return;
-
-  state.events.push({
-    id: genId(),
-    title: title,
-    description: desc || title,
-    tag: tag,
-    time: time,
-  });
-
-  dom.formAddTitle.value = "";
-  dom.formAddTag.value = "";
-  dom.formAddTime.value = "";
-  dom.formAddDesc.value = "";
-  state.showAddEvent = false;
-  dom.addEventPanel.classList.add("hidden");
-
-  renderTimeline();
-}
-
-function startEdit(id) {
-  state.editingEventId = id;
-  renderTimeline();
-}
-
-function cancelEdit() {
-  state.editingEventId = null;
-  renderTimeline();
-}
-
-function saveEdit(id) {
-  const titleEl = document.getElementById("edit-title-" + id);
-  const tagEl = document.getElementById("edit-tag-" + id);
-  const timeEl = document.getElementById("edit-time-" + id);
-  const descEl = document.getElementById("edit-desc-" + id);
-  if (!titleEl || !tagEl) return;
-
-  const evt = state.events.find(function (e) {
-    return e.id === id;
-  });
-  if (!evt) return;
-
-  evt.title = titleEl.value.trim() || evt.title;
-  evt.tag = tagEl.value;
-  evt.time = timeEl.value.trim() || evt.time;
-  evt.description = descEl.value.trim() || evt.description;
-
-  state.editingEventId = null;
-  renderTimeline();
-}
-
-window.startEdit = startEdit;
-window.cancelEdit = cancelEdit;
-window.saveEdit = saveEdit;
-
-function deleteEvent(id) {
-  state.events = state.events.filter(function (e) {
-    return e.id !== id;
-  });
-  if (state.editingEventId === id) state.editingEventId = null;
-  renderTimeline();
-}
-window.deleteEvent = deleteEvent;
-
 // ---- API Key 设置弹窗 ----
 
 function onOpenSettings() {
   dom.settingsApiKey.value = sessionStorage.getItem("ec_api_key") || "";
+  dom.settingsBaseUrl.value = sessionStorage.getItem("ec_base_url") || "";
+  dom.settingsModel.value = sessionStorage.getItem("ec_model") || "";
   dom.settingsOverlay.classList.remove("hidden");
 }
 
@@ -644,14 +514,59 @@ function onCloseSettings() {
 
 function onSaveSettings() {
   const key = dom.settingsApiKey.value.trim();
-  if (key) {
-    sessionStorage.setItem("ec_api_key", key);
-  } else {
-    sessionStorage.removeItem("ec_api_key");
-  }
+  const baseUrl = dom.settingsBaseUrl.value.trim();
+  const model = dom.settingsModel.value.trim();
+  if (key) sessionStorage.setItem("ec_api_key", key);
+  else sessionStorage.removeItem("ec_api_key");
+  if (baseUrl) sessionStorage.setItem("ec_base_url", baseUrl);
+  else sessionStorage.removeItem("ec_base_url");
+  if (model) sessionStorage.setItem("ec_model", model);
+  else sessionStorage.removeItem("ec_model");
   dom.settingsOverlay.classList.add("hidden");
-  // 触发状态刷新
   checkStatus();
+}
+
+function onEnter() {
+  document.getElementById("hero").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+  checkStatus();
+  setInterval(checkStatus, 3000);
+}
+
+function onCloseConnect() {
+  dom.connectOverlay.classList.add("hidden");
+}
+
+function onOpenConnect() {
+  dom.connectOverlay.classList.remove("hidden");
+}
+
+function onCopyAll() {
+  const commands = [
+    "git clone https://github.com/janfeise/Event-Chronicle.git",
+    "cd Event-Chronicle/docs",
+    "npm install",
+    "cp .env.example .env",
+    "# 编辑 .env 填入 LLM_API_KEY",
+    "npm run dev",
+  ].join("\n");
+
+  navigator.clipboard
+    .writeText(commands)
+    .then(function () {
+      dom.btnCopyAll.textContent = "✓ 已复制";
+      dom.btnCopyAll.classList.add("copied");
+      setTimeout(function () {
+        dom.btnCopyAll.textContent = "📋 一键复制";
+        dom.btnCopyAll.classList.remove("copied");
+      }, 2000);
+    })
+    .catch(function () {
+      dom.btnCopyAll.textContent = "复制失败";
+      setTimeout(function () {
+        dom.btnCopyAll.textContent = "📋 一键复制";
+      }, 1500);
+    });
 }
 
 // ===========================================================================
@@ -672,8 +587,6 @@ function init() {
   dom.btnSend.addEventListener("click", onSend);
   document.getElementById("btn-clear").addEventListener("click", onClear);
   document.getElementById("btn-reset").addEventListener("click", onReset);
-  dom.btnToggleAdd.addEventListener("click", onToggleAdd);
-  dom.btnSubmitAdd.addEventListener("click", onSubmitAdd);
   document
     .getElementById("btn-settings")
     .addEventListener("click", onOpenSettings);
@@ -688,15 +601,27 @@ function init() {
     .addEventListener("click", function (e) {
       if (e.target === this) onCloseSettings();
     });
+  document
+    .getElementById("btn-deploy")
+    .addEventListener("click", onOpenConnect);
+  document
+    .getElementById("btn-connect-close")
+    .addEventListener("click", onCloseConnect);
+  document
+    .getElementById("connect-overlay")
+    .addEventListener("click", function (e) {
+      if (e.target === this) onCloseConnect();
+    });
+  dom.btnCopyAll.addEventListener("click", onCopyAll);
 
-  // 初始渲染
+  // 绑定首屏按钮
+  document.getElementById("btn-enter").addEventListener("click", onEnter);
+
+  // 初始渲染（消息 / 时间线在后台就绪，点击"开始体验"后可见）
+  // 注意：不调 renderStatus() 以免触发 connect-overlay 弹窗
+  dom.statusText.textContent = "点击「开始体验」后检测后端…";
   renderMessages();
   renderTimeline();
-  renderStatus(false, false, "", "");
-
-  // 轮询后端状态
-  checkStatus();
-  setInterval(checkStatus, 3000);
 }
 
 document.addEventListener("DOMContentLoaded", init);
