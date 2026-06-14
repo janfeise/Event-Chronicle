@@ -18,15 +18,13 @@ export default defineConfig({
   // 构建前清理 dist/
   clean: true,
 
-  // 不打包的依赖（仅保留 Node.js 内置模块）
-  // dotenv / openai 必须打包——ST 扩展环境没有 node_modules/
+  // 不打包进 bundle 的依赖
   external: [
+    "dotenv",
+    "openai",
     "fs",
     "path",
   ],
-
-  // 强制打包这些包（即使被自动检测为 external）
-  noExternal: [/openai/, /dotenv/],
 
   // 输出目录
   outDir: "dist",
