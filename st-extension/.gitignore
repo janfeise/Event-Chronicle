@@ -17,3 +17,6 @@ Thumbs.db
 
 # Dev files (keep install.js for SDK updates, but don't commit test artifacts)
 *.log
+
+# env
+.env

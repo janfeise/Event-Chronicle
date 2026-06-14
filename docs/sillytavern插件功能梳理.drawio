@@ -1,0 +1,129 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="第 1 页" id="7IJvdxWEqtKBmCw4txaV">
+    <mxGraphModel dx="2734" dy="4122" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="2336" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="pHsnJnkB9i9o_4h52aza-17" edge="1" parent="1" source="pHsnJnkB9i9o_4h52aza-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="pHsnJnkB9i9o_4h52aza-2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="770" y="630" />
+              <mxPoint x="770" y="330" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-24" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="770" y="630" />
+              <mxPoint x="770" y="1100" />
+            </Array>
+            <mxPoint x="710" y="629.9970370370365" as="sourcePoint" />
+            <mxPoint x="827.0000000000002" y="1099.96" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="EventChronicle extension" vertex="1">
+          <mxGeometry height="60" width="120" x="590" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-18" edge="1" parent="1" source="pHsnJnkB9i9o_4h52aza-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="pHsnJnkB9i9o_4h52aza-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-19" edge="1" parent="1" source="pHsnJnkB9i9o_4h52aza-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="pHsnJnkB9i9o_4h52aza-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-20" edge="1" parent="1" source="pHsnJnkB9i9o_4h52aza-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="pHsnJnkB9i9o_4h52aza-8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-23" edge="1" parent="1" source="pHsnJnkB9i9o_4h52aza-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=-0.008;entryY=0.56;entryDx=0;entryDy=0;entryPerimeter=0;" target="pHsnJnkB9i9o_4h52aza-11">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="980" y="550" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-31" edge="1" parent="1" source="pHsnJnkB9i9o_4h52aza-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="pHsnJnkB9i9o_4h52aza-30">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-34" edge="1" parent="1" source="pHsnJnkB9i9o_4h52aza-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="pHsnJnkB9i9o_4h52aza-32">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="配置项" vertex="1">
+          <mxGeometry height="60" width="120" x="840" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-25" edge="1" parent="1" source="pHsnJnkB9i9o_4h52aza-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="pHsnJnkB9i9o_4h52aza-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-26" edge="1" parent="1" source="pHsnJnkB9i9o_4h52aza-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="pHsnJnkB9i9o_4h52aza-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="对话更改" vertex="1">
+          <mxGeometry height="60" width="120" x="827" y="1070" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="1. 事件提取：达到阈值后调用Event api 提取事件" vertex="1">
+          <mxGeometry height="60" width="120" x="1000" y="990" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="2. 注入：在每次聊天时注入memory" vertex="1">
+          <mxGeometry height="60" width="120" x="1000" y="1170" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="1. 对话次数：可配置对话次数，当聊天message达到 N 条后会自动触发Event事提取api" vertex="1">
+          <mxGeometry height="110" width="120" x="1000" y="-40" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="2. 整理阈值：当新增事件的条数达到 M 条时，会自动触发事件整理" vertex="1">
+          <mxGeometry height="110" width="120" x="1000" y="125" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="3. 模型设置（可选）：sillytavern中已经配置了模型，但Event插件仍提供配置项" vertex="1">
+          <mxGeometry height="110" width="120" x="1000" y="275" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-10" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="4. event数据浏览，以时间线顺序展示event数据" vertex="1">
+          <mxGeometry height="110" width="120" x="1000" y="450" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-11" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="5. event修改和删除" vertex="1">
+          <mxGeometry height="110" width="120" x="1000" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-28" edge="1" parent="1" source="pHsnJnkB9i9o_4h52aza-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="pHsnJnkB9i9o_4h52aza-13">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-29" edge="1" parent="1" source="pHsnJnkB9i9o_4h52aza-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="pHsnJnkB9i9o_4h52aza-14">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-12" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="注意事项" vertex="1">
+          <mxGeometry height="60" width="120" x="827" y="1420" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-13" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="1. 对以往数据生成大量event数据时，提醒用户：会耗费大量token" vertex="1">
+          <mxGeometry height="60" width="120" x="1000" y="1350" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-14" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="2. sillytavern有maxtoken限制，可能会导致插件调用llm api失效" vertex="1">
+          <mxGeometry height="60" width="120" x="1000" y="1490" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-21" edge="1" parent="1" source="pHsnJnkB9i9o_4h52aza-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=-0.008;entryY=0.615;entryDx=0;entryDy=0;entryPerimeter=0;" target="pHsnJnkB9i9o_4h52aza-10">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-27" edge="1" parent="1" source="pHsnJnkB9i9o_4h52aza-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=-0.003;entryY=0.615;entryDx=0;entryDy=0;entryPerimeter=0;" target="pHsnJnkB9i9o_4h52aza-12">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-38" edge="1" parent="1" source="pHsnJnkB9i9o_4h52aza-30" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="pHsnJnkB9i9o_4h52aza-36">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-30" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="0. event数据一键生成（增量生成），对sillytavern中的聊天数据增量生成event，切片生成，一次全部生成可能超出上下文限制（批次生成的整理阈值增高，暂时不可配置）" vertex="1">
+          <mxGeometry height="160" width="120" x="1000" y="-240" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-32" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="6. maxToken：sillyTarven默认的最大token数很少，以插件配置的maxToken覆盖（插件触发时覆盖）" vertex="1">
+          <mxGeometry height="110" width="120" x="1000" y="780" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-35" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="切片数量：每次发送多少条message用于生成event？" vertex="1">
+          <mxGeometry height="160" width="120" x="1180" y="-360" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-36" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="增量生成：历史event生成完成后需进行记录，避免每次都从头开始，开销大" vertex="1">
+          <mxGeometry height="160" width="120" x="1190" y="-150" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-37" edge="1" parent="1" source="pHsnJnkB9i9o_4h52aza-30" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.047;entryY=0.48;entryDx=0;entryDy=0;entryPerimeter=0;" target="pHsnJnkB9i9o_4h52aza-35">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-39" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="event UI模板：&lt;div&gt;上方：时间 title 重要度&lt;/div&gt;&lt;div&gt;下方：summary&lt;/div&gt;&lt;div&gt;下下方：tag（文字展示）&lt;/div&gt;&lt;div&gt;最下方：右下角编辑和删除按钮&lt;/div&gt;" vertex="1">
+          <mxGeometry height="110" width="120" x="1220" y="640" as="geometry" />
+        </mxCell>
+        <mxCell id="pHsnJnkB9i9o_4h52aza-41" edge="1" parent="1" source="pHsnJnkB9i9o_4h52aza-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.048;entryY=0.408;entryDx=0;entryDy=0;entryPerimeter=0;" target="pHsnJnkB9i9o_4h52aza-39">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

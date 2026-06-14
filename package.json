@@ -36,7 +36,8 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "sync-st-extension": "git subtree push --prefix=st-extension origin st-extension"
   },
   "dependencies": {
     "dotenv": "^17.4.2",
