@@ -26,6 +26,7 @@ import {
   complete,
   extractEvents,
   appendEvents,
+  loadChronicle,
   exportMemory,
   exportRaw,
 } from "event-chronicle";
@@ -207,6 +208,10 @@ ${history}
     }));
 
     const events = await extractEvents(chatMessages);
+    if (events.length > 0) {
+      console.log("[Server] 提取事件:", events.length, "条",
+        events.map((e: Event) => e.title));
+    }
 
     // 3. 持久化
     if (events.length > 0) {
@@ -230,6 +235,54 @@ ${history}
     const message = err instanceof Error ? err.message : String(err);
     console.error("[/api/process] Error:", message);
     res.status(500).json({ error: "处理失败", message });
+  }
+});
+
+// ---- GET /api/events ----
+app.get("/api/events", (_req, res) => {
+  try {
+    const events = loadChronicle(EVENT_ID);
+    res.json({ events });
+  } catch {
+    res.json({ events: [] });
+  }
+});
+
+// ---- 消息持久化 ----
+import * as fs from "fs";
+
+const MSG_FILE = path.resolve(__dirname, "..", "data", "demo-messages.json");
+
+function loadMessagesFile(): unknown[] {
+  try {
+    if (fs.existsSync(MSG_FILE)) {
+      return JSON.parse(fs.readFileSync(MSG_FILE, "utf-8"));
+    }
+  } catch { /* ignore */ }
+  return [];
+}
+
+function saveMessagesFile(messages: unknown[]): void {
+  const dir = path.dirname(MSG_FILE);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(MSG_FILE, JSON.stringify(messages, null, 2), "utf-8");
+}
+
+app.get("/api/messages", (_req, res) => {
+  res.json({ messages: loadMessagesFile() });
+});
+
+app.post("/api/messages", (req, res) => {
+  try {
+    const { messages } = req.body as { messages?: unknown[] };
+    if (!Array.isArray(messages)) {
+      return res.status(400).json({ error: "messages array is required" });
+    }
+    saveMessagesFile(messages);
+    res.json({ ok: true });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    res.status(500).json({ error: "保存失败", message });
   }
 });
 

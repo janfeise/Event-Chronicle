@@ -66,13 +66,6 @@ const MOCK_MESSAGES = [
 
 const MOCK_EVENTS = [
   {
-    id: "e1",
-    title: "养了一只橘猫",
-    description: "用户最近养了一只橘猫，名叫奶糖，特别粘人。",
-    tag: "宠物",
-    time: "昨天",
-  },
-  {
     id: "e2",
     title: "橘猫奶糖三个月大",
     description: "这只名为奶糖的橘猫三个月大，精力旺盛，喜欢在家里跑酷。",
@@ -85,27 +78,6 @@ const MOCK_EVENTS = [
     description: "用户昨天带奶糖去做了体检。",
     tag: "健康",
     time: "昨天",
-  },
-  {
-    id: "e4",
-    title: "体检结果正常",
-    description: "奶糖的体检结果显示一切正常，用户对此感到放心。",
-    tag: "健康",
-    time: "昨天",
-  },
-  {
-    id: "e5",
-    title: "用户对奶糖感到放心",
-    description: "在得知体检结果正常后，用户对奶糖的健康状况感到十分放心。",
-    tag: "情感",
-    time: "09:37",
-  },
-  {
-    id: "e6",
-    title: "关注小猫营养问题",
-    description: "用户就三个月大小猫的营养问题向AI寻求建议。",
-    tag: "建议",
-    time: "09:40",
   },
 ];
 
@@ -176,6 +148,32 @@ const state = {
   backendModel: "",
   errorMessage: "",
 };
+
+async function saveServerMessages() {
+  try {
+    await fetch(BACKEND_URL + "/api/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: state.messages }),
+    });
+  } catch {
+    /* 后端不可用，静默降级 */
+  }
+}
+
+async function loadServerMessages() {
+  try {
+    const res = await fetch(BACKEND_URL + "/api/messages");
+    const data = await res.json();
+    if (data.messages && data.messages.length > 0) {
+      state.messages = data.messages;
+      renderMessages();
+      console.log("[Demo] 加载持久化消息:", data.messages.length, "条");
+    }
+  } catch {
+    /* 后端不可用，保持默认 */
+  }
+}
 
 // ===========================================================================
 // 3. DOM 引用
@@ -409,6 +407,8 @@ async function onSend(e) {
   renderMessages();
   renderError();
 
+  console.log("[Demo] 用户输入:", text);
+
   try {
     let reply, newEvents;
 
@@ -416,12 +416,21 @@ async function onSend(e) {
       const result = await processWithBackend(state.messages);
       reply = result.reply;
       newEvents = result.events;
+      console.log(
+        "[Demo] 后端提取事件:",
+        newEvents.length,
+        "条",
+        newEvents.map(function (e) {
+          return e.title;
+        }),
+      );
     } else {
       // 沙盒模式
       reply =
         sandboxReply(text) + "（静态，沙盒模拟回复，非真实 llm api 调用）";
       const evt = sandboxExtractEvent(text);
       newEvents = evt ? [evt] : [];
+      console.log("[Demo] 沙盒提取事件:", newEvents.length, "条");
     }
 
     // 添加 AI 回复
@@ -431,22 +440,27 @@ async function onSend(e) {
       content: reply,
       time: now(),
     });
+    saveServerMessages();
 
-    // 合并事件（后端已去重，沙盒直接追加）
+    // 合并事件：只追加新增的（去重），保持时间顺序
     if (newEvents.length > 0) {
-      if (state.backendConfigured) {
-        // 后端返回的是全量事件，直接替换
-        const backendIds = new Set(
-          newEvents.map(function (e) {
-            return e.id;
-          }),
+      const existingIds = new Set(
+        state.events.map(function (e) {
+          return e.id;
+        }),
+      );
+      const trulyNew = newEvents.filter(function (e) {
+        return !existingIds.has(e.id);
+      });
+      if (trulyNew.length > 0) {
+        state.events = [...state.events, ...trulyNew];
+        console.log(
+          "[Demo] 新增事件:",
+          trulyNew.length,
+          "条，总计:",
+          state.events.length,
+          "条",
         );
-        const manualEvents = state.events.filter(function (e) {
-          return !e.id || !backendIds.has(e.id);
-        });
-        state.events = [...newEvents, ...manualEvents];
-      } else {
-        state.events = [...state.events, ...newEvents];
       }
     }
 
@@ -485,6 +499,7 @@ function onClear() {
   state.messages = [];
   state.events = [];
   state.errorMessage = "";
+  saveServerMessages();
   renderMessages();
   renderTimeline();
   renderError();
@@ -494,6 +509,7 @@ function onReset() {
   state.messages = [...MOCK_MESSAGES];
   state.events = [...MOCK_EVENTS];
   state.errorMessage = "";
+  saveServerMessages();
   renderMessages();
   renderTimeline();
   renderError();
@@ -526,11 +542,69 @@ function onSaveSettings() {
   checkStatus();
 }
 
-function onEnter() {
+async function onEnter() {
   document.getElementById("hero").classList.add("hidden");
   document.getElementById("app").classList.remove("hidden");
-  checkStatus();
+  await checkStatus();
+  // 后端已连接时拉取持久化数据
+  if (state.backendConfigured) {
+    await loadServerMessages();
+    await loadPersistedEvents();
+  }
   setInterval(checkStatus, 3000);
+}
+
+async function loadPersistedEvents() {
+  try {
+    const res = await fetch(BACKEND_URL + "/api/events");
+    const data = await res.json();
+    if (data.events && data.events.length > 0) {
+      // 将 SDK Event 格式转为前端格式
+      const time = now();
+      const persisted = data.events.map(function (e) {
+        return {
+          id: e.id,
+          title: e.title,
+          description: e.summary || e.description || "",
+          tag: mapTag(e.tags || []),
+          time: time,
+        };
+      });
+      // 合并：已有事件（可能包含 MOCK_EVENTS）+ 持久化事件，按 id 去重
+      const existingIds = new Set(
+        state.events.map(function (e) {
+          return e.id;
+        }),
+      );
+      const newEvents = persisted.filter(function (e) {
+        return !existingIds.has(e.id);
+      });
+      state.events = [...state.events, ...newEvents];
+      renderTimeline();
+      console.log("[Demo] 加载持久化事件:", newEvents.length, "条");
+    }
+  } catch {
+    /* 后端不可用，保持默认数据 */
+  }
+}
+
+function mapTag(sdkTags) {
+  var TAG_MAP = [
+    [["pet", "animal", "cat", "dog", "宠物", "猫", "狗"], "宠物"],
+    [["health", "medical", "体检", "健康", "医院", "vet"], "健康"],
+    [["emotion", "feeling", "mood", "情感", "情绪", "心情"], "情感"],
+    [["advice", "suggestion", "建议", "推荐", "营养", "饮食"], "建议"],
+    [["daily", "routine", "日常", "生活"], "日常"],
+  ];
+  for (var i = 0; i < sdkTags.length; i++) {
+    var lower = sdkTags[i].toLowerCase();
+    for (var j = 0; j < TAG_MAP.length; j++) {
+      for (var k = 0; k < TAG_MAP[j][0].length; k++) {
+        if (lower.indexOf(TAG_MAP[j][0][k]) !== -1) return TAG_MAP[j][1];
+      }
+    }
+  }
+  return "其他";
 }
 
 function onCloseConnect() {
