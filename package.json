@@ -1,6 +1,6 @@
 {
   "name": "event-chronicle",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "从 AI 对话中提取事件，构建可视编年史，形成长期记忆",
   "license": "MIT",
   "author": "Tilex",
