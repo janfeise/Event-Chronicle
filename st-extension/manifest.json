@@ -1,5 +1,5 @@
 {
-  "display_name": "Event Chronicle",
+  "display_name": "Event Chronicle · 事件编年史",
   "version": "1.0.0",
   "description": "从 AI 角色扮演对话中自动提取结构化事件，构建可视编年史，注入长期记忆。Automatically extract structured events from AI roleplay chats, build a visual chronicle timeline, and inject long-term memory into LLM context.",
   "author": "Tilex",
@@ -8,5 +8,8 @@
   "loading_order": 100,
   "auto_update": true,
   "homePage": "https://github.com/janfeise/Event-Chronicle",
+  "i18n": {
+    "zh-cn": "i18n/zh-cn.json"
+  },
   "dependencies": []
 }

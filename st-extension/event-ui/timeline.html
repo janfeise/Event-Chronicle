@@ -1,10 +1,10 @@
 <!-- timeline.html — Event Chronicle Timeline Browser -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Event Chronicle — Timeline</title>
+  <title>事件编年史 · 时间线</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -257,10 +257,10 @@
   <!-- Header                                                            -->
   <!-- ================================================================= -->
   <div class="ec-header">
-    <h1>📜 Event Chronicle Timeline</h1>
+    <h1>📜 事件编年史 · 时间线</h1>
     <div class="ec-header-actions">
-      <button class="ec-btn ec-btn-secondary" onclick="refreshTimeline()">⟳ Refresh</button>
-      <button class="ec-btn ec-btn-primary" onclick="exportMemory()">📋 Export Memory</button>
+      <button class="ec-btn ec-btn-secondary" onclick="refreshTimeline()">⟳ 刷新</button>
+      <button class="ec-btn ec-btn-primary" onclick="exportMemory()">📋 导出记忆</button>
     </div>
   </div>
 
@@ -269,16 +269,16 @@
   <!-- ================================================================= -->
   <div class="ec-filters">
     <select id="ec-filter-chat" onchange="applyFilters()">
-      <option value="">All Locations</option>
+      <option value="">所有地点</option>
     </select>
     <select id="ec-filter-importance" onchange="applyFilters()">
-      <option value="0">All Importance</option>
-      <option value="5">★ 5+ (Notable)</option>
-      <option value="7">★ 7+ (Key Events)</option>
-      <option value="9">★ 9+ (Story Defining)</option>
+      <option value="0">全部重要度</option>
+      <option value="5">★ 5+ (值得关注)</option>
+      <option value="7">★ 7+ (关键事件)</option>
+      <option value="9">★ 9+ (决定性事件)</option>
     </select>
     <input type="text" id="ec-filter-search" class="ec-filter-search"
-           placeholder="Search events..." oninput="applyFilters()">
+           placeholder="搜索事件..." oninput="applyFilters()">
     <span id="ec-event-count" class="ec-event-count"></span>
   </div>
 
@@ -297,41 +297,41 @@
   <!-- ================================================================= -->
   <div id="ec-edit-modal" class="ec-modal-overlay">
     <div class="ec-modal">
-      <h3 id="ec-modal-title">Edit Event</h3>
+      <h3 id="ec-modal-title">编辑事件</h3>
 
       <div class="ec-form-group">
-        <label>Title</label>
-        <input type="text" id="ec-edit-title" placeholder="Event title">
+        <label>标题</label>
+        <input type="text" id="ec-edit-title" placeholder="事件标题">
       </div>
 
       <div class="ec-form-group">
-        <label>Summary</label>
-        <textarea id="ec-edit-summary" placeholder="Event summary"></textarea>
+        <label>概述</label>
+        <textarea id="ec-edit-summary" placeholder="事件概述"></textarea>
       </div>
 
       <div class="ec-form-group">
-        <label>Importance (1–10)</label>
+        <label>重要度 (1–10)</label>
         <input type="number" id="ec-edit-importance" min="1" max="10" value="5">
       </div>
 
       <div class="ec-form-group">
-        <label>Participants (comma-separated)</label>
-        <input type="text" id="ec-edit-participants" placeholder="e.g. 战士, 法师, 盗贼">
+        <label>参与者（逗号分隔）</label>
+        <input type="text" id="ec-edit-participants" placeholder="例如 战士, 法师, 盗贼">
       </div>
 
       <div class="ec-form-group">
-        <label>Location</label>
-        <input type="text" id="ec-edit-location" placeholder="e.g. Tavern">
+        <label>地点</label>
+        <input type="text" id="ec-edit-location" placeholder="例如 酒馆">
       </div>
 
       <div class="ec-form-group">
-        <label>Tags (comma-separated)</label>
-        <input type="text" id="ec-edit-tags" placeholder="e.g. discovery, quest, combat">
+        <label>标签（逗号分隔）</label>
+        <input type="text" id="ec-edit-tags" placeholder="例如 发现, 任务, 战斗">
       </div>
 
       <div class="ec-modal-actions">
-        <button class="ec-btn ec-btn-secondary" onclick="closeEditModal()">Cancel</button>
-        <button class="ec-btn ec-btn-primary" onclick="saveEdit()">Save Changes</button>
+        <button class="ec-btn ec-btn-secondary" onclick="closeEditModal()">取消</button>
+        <button class="ec-btn ec-btn-primary" onclick="saveEdit()">保存更改</button>
       </div>
     </div>
   </div>

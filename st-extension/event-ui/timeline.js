@@ -36,7 +36,7 @@
     var container = document.getElementById('ec-timeline-container');
 
     if (!bridge) {
-      container.innerHTML = '<div class="ec-empty"><div class="ec-empty-icon">⚠</div><p>Event Chronicle extension not found. Ensure the extension is installed and loaded.</p></div>';
+      container.innerHTML = '<div class="ec-empty"><div class="ec-empty-icon">⚠</div><p>Event Chronicle 扩展未找到。请确保扩展已安装并加载。</p></div>';
       return;
     }
 
@@ -63,7 +63,7 @@
     // Preserve current selection
     var currentVal = chatSelect.value;
 
-    chatSelect.innerHTML = '<option value="">All Locations</option>';
+    chatSelect.innerHTML = '<option value="">所有地点</option>';
     var sorted = Array.from(locations).sort();
     sorted.forEach(function(loc) {
       var option = document.createElement('option');
@@ -107,7 +107,7 @@
     // Update count
     var countEl = document.getElementById('ec-event-count');
     if (countEl) {
-      countEl.textContent = filteredEvents.length + ' / ' + allEvents.length + ' events';
+      countEl.textContent = filteredEvents.length + ' / ' + allEvents.length + ' 个事件';
     }
 
     renderTimeline(filteredEvents);
@@ -121,7 +121,7 @@
     var container = document.getElementById('ec-timeline-container');
 
     if (!events || events.length === 0) {
-      container.innerHTML = '<div class="ec-empty"><div class="ec-empty-icon">📭</div><p>No events recorded yet. Start chatting to build your chronicle!</p></div>';
+      container.innerHTML = '<div class="ec-empty"><div class="ec-empty-icon">📭</div><p>暂无事件记录。开始聊天以构建编年史！</p></div>';
       return;
     }
 
@@ -131,8 +131,8 @@
     var html = '';
     groups.forEach(function(groupEvents, groupName) {
       html += '<div class="ec-group-header">' +
-        '<h3>📍 ' + escapeHtml(groupName || 'Unplaced') + '</h3>' +
-        '<span class="ec-badge">' + groupEvents.length + ' events</span>' +
+        '<h3>📍 ' + escapeHtml(groupName || '未归类') + '</h3>' +
+        '<span class="ec-badge">' + groupEvents.length + ' 个事件</span>' +
         '</div>';
 
       for (var i = 0; i < groupEvents.length; i++) {
@@ -146,7 +146,7 @@
   function groupByLocation(events) {
     var map = new Map();
     events.forEach(function(e) {
-      var key = e.location || 'Unplaced';
+      var key = e.location || '未归类';
       if (!map.has(key)) map.set(key, []);
       map.get(key).push(e);
     });
@@ -179,7 +179,7 @@
       '<div class="ec-event-card" data-event-id="' + safeId + '">' +
         (timeStr ? '<div class="ec-event-time">📅 ' + escapeHtml(timeStr) + '</div>' : '') +
         '<div class="ec-event-card-header">' +
-          '<span class="ec-event-title">' + escapeHtml(event.title || 'Untitled') + '</span>' +
+          '<span class="ec-event-title">' + escapeHtml(event.title || '未命名') + '</span>' +
           '<span class="ec-event-stars">' + stars + '</span>' +
         '</div>' +
         '<div class="ec-event-summary">' + escapeHtml(event.summary || '') + '</div>' +
@@ -191,8 +191,8 @@
         (event.tags && event.tags.length ?
           '<div class="ec-event-tags">' + tagsHtml + '</div>' : '') +
         '<div class="ec-event-actions">' +
-          '<button class="ec-btn ec-btn-secondary ec-btn-sm" onclick="openEditModal(\'' + safeId + '\')">✏️ Edit</button>' +
-          '<button class="ec-btn ec-btn-danger ec-btn-sm" onclick="confirmDelete(\'' + safeId + '\')">🗑 Delete</button>' +
+          '<button class="ec-btn ec-btn-secondary ec-btn-sm" onclick="openEditModal(\'' + safeId + '\')">✏️ 编辑</button>' +
+          '<button class="ec-btn ec-btn-danger ec-btn-sm" onclick="confirmDelete(\'' + safeId + '\')">🗑 删除</button>' +
         '</div>' +
       '</div>'
     );
@@ -225,7 +225,7 @@
       // Copy to clipboard
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(memory).then(function() {
-          alert('Memory prompt copied to clipboard! Paste it into a system message or author note.');
+          alert('记忆 Prompt 已复制到剪贴板！请粘贴到系统消息或作者备注中。');
         }).catch(function() {
           showMemoryModal(memory);
         });
@@ -233,7 +233,7 @@
         showMemoryModal(memory);
       }
     } else {
-      alert('No events to export. Chat first to build your chronicle.');
+      alert('暂无事件可导出。请先聊天以构建编年史。');
     }
   };
 
@@ -242,13 +242,13 @@
     var overlay = document.createElement('div');
     overlay.className = 'ec-modal-overlay active';
     overlay.innerHTML = '<div class="ec-modal" style="max-width:700px;">' +
-      '<h3>Memory Prompt</h3>' +
-      '<p style="color:#999;margin-bottom:12px;font-size:13px;">Copy the text below and paste into your system prompt or author note.</p>' +
+      '<h3>记忆 Prompt</h3>' +
+      '<p style="color:#999;margin-bottom:12px;font-size:13px;">复制以下文本，粘贴到系统 Prompt 或作者备注中。</p>' +
       '<textarea readonly style="width:100%;height:300px;font-size:12px;font-family:monospace;" onclick="this.select()">' +
       escapeHtml(text) +
       '</textarea>' +
       '<div class="ec-modal-actions">' +
-        '<button class="ec-btn ec-btn-primary" onclick="this.closest(\'.ec-modal-overlay\').remove()">Close</button>' +
+        '<button class="ec-btn ec-btn-primary" onclick="this.closest(\'.ec-modal-overlay\').remove()">关闭</button>' +
       '</div>' +
       '</div>';
     document.body.appendChild(overlay);

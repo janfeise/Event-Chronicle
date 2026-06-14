@@ -1,24 +1,22 @@
-// settings.js — Settings Panel Interactivity
+// settings.js — 设置面板交互逻辑
 // =============================================================================
-// Handles batch generation button, progress display, status indicator,
-// and settings change notifications. Runs inside ST's settings iframe.
+// 处理批量生成按钮、进度显示、状态指示器和设置变更通知。
+// 运行在 ST 的设置 iframe 中。
 // =============================================================================
 
 (function() {
   'use strict';
 
-  let pollInterval = null;
+  var pollInterval = null;
 
   // -----------------------------------------------------------------------
-  // Get reference to the extension API (exposed on window.parent or globalThis)
+  // 获取扩展 API（挂载在 window.parent 或 globalThis 上）
   // -----------------------------------------------------------------------
 
   function getAPI() {
-    // In ST settings iframe, the API is on the parent window
     if (window.parent && window.parent.EventChronicle) {
       return window.parent.EventChronicle;
     }
-    // Fallback: direct access
     if (window.EventChronicle) {
       return window.EventChronicle;
     }
@@ -26,198 +24,189 @@
   }
 
   // -----------------------------------------------------------------------
-  // Status display
+  // 状态显示
   // -----------------------------------------------------------------------
 
   function updateStatus() {
-    const indicator = document.getElementById('ec-status-indicator');
-    const text = document.getElementById('ec-status-text');
-    const detail = document.getElementById('ec-status-detail');
+    var indicator = document.getElementById('ec-status-indicator');
+    var text = document.getElementById('ec-status-text');
+    var detail = document.getElementById('ec-status-detail');
 
     if (!indicator || !text) return;
 
-    const api = getAPI();
+    var api = getAPI();
 
     if (!api) {
       indicator.className = 'ec-indicator error';
-      text.textContent = 'Extension not loaded';
-      if (detail) detail.textContent = 'Event Chronicle extension is not active.';
+      text.textContent = '扩展未加载';
+      if (detail) detail.textContent = 'Event Chronicle 扩展未激活。';
       return;
     }
 
     if (api.isReady()) {
       indicator.className = 'ec-indicator ready';
-      text.textContent = 'Active — LLM connected';
-      const settings = api.getSettings();
+      text.textContent = '运行中 — LLM 已连接';
+      var settings = api.getSettings();
       if (detail && settings) {
-        const override = settings.llmOverride || {};
-        const model = override.model || 'ST default';
-        detail.textContent = `Model: ${model} · Extract every ${settings.extractTriggerCount} msg · Merge every ${settings.mergeTriggerCount} events`;
+        var override = settings.llmOverride || {};
+        var model = override.model || 'ST 默认';
+        detail.textContent = '模型: ' + model + ' · 每 ' + settings.extractTriggerCount + ' 条消息提取 · 每 ' + settings.mergeTriggerCount + ' 条事件整理';
       }
     } else {
       indicator.className = 'ec-indicator error';
-      text.textContent = 'Not initialized — check API key';
-      if (detail) detail.textContent = 'Configure LLM in settings and restart SillyTavern.';
+      text.textContent = '未初始化 — 请检查 API 密钥';
+      if (detail) detail.textContent = '请在设置中配置 LLM 后重启 SillyTavern。';
     }
   }
 
   // -----------------------------------------------------------------------
-  // Batch generation
+  // 批量生成
   // -----------------------------------------------------------------------
 
   function getChatMessages() {
-    // Attempt to get chat messages from ST parent context
+    // 从 ST 父级上下文获取聊天消息
     try {
       if (window.parent && typeof window.parent.getContext === 'function') {
-        const ctx = window.parent.getContext();
+        var ctx = window.parent.getContext();
         if (ctx && Array.isArray(ctx.chat)) {
           return ctx.chat;
         }
       }
-    } catch (e) { /* cross-origin */ }
+    } catch (e) { /* 跨域 */ }
 
-    // Fallback: try direct access
     try {
       if (typeof getContext === 'function') {
-        const ctx = getContext();
+        var ctx = getContext();
         if (ctx && Array.isArray(ctx.chat)) {
           return ctx.chat;
         }
       }
-    } catch (e) { /* not in ST context */ }
+    } catch (e) { /* 不在 ST 上下文中 */ }
 
     return [];
   }
 
   function showTokenWarning(messagesCount, sliceSize) {
-    const sliceCount = Math.ceil(messagesCount / sliceSize);
-    const estimatedTokens = sliceCount * 3000; // rough: ~3K tokens per slice
+    var sliceCount = Math.ceil(messagesCount / sliceSize);
+    var estimatedTokens = sliceCount * 3000;
 
     return confirm(
-      '⚠ Token Consumption Warning\n\n' +
-      'This will process the entire chat history to generate event chronicle data.\n\n' +
-      `Total messages: ${messagesCount}\n` +
-      `Slice size: ${sliceSize} messages/slice\n` +
-      `Estimated LLM calls: ~${sliceCount}\n` +
-      `Estimated token consumption: ~${estimatedTokens.toLocaleString()} tokens\n\n` +
-      'The operation runs in the background and can be resumed if interrupted.\n\n' +
-      'Do you want to continue?'
+      '⚠ Token 消耗提醒\n\n' +
+      '此操作将处理全部聊天历史以生成事件编年史数据。\n\n' +
+      '消息总数: ' + messagesCount + ' 条\n' +
+      '切片大小: ' + sliceSize + ' 条/批次\n' +
+      '预计 LLM 调用: ~' + sliceCount + ' 次\n' +
+      '预计 Token 消耗: ~' + estimatedTokens.toLocaleString() + ' tokens\n\n' +
+      '操作在后台运行，中断后可以恢复。\n\n' +
+      '是否继续？'
     );
   }
 
   async function handleBatchStart() {
-    const api = getAPI();
+    var api = getAPI();
 
     if (!api) {
-      alert('Event Chronicle extension is not loaded.');
+      alert('Event Chronicle 扩展未加载。');
       return;
     }
 
     if (!api.isReady()) {
-      alert('SDK is not ready. Please check your API key configuration and restart SillyTavern.');
+      alert('SDK 未就绪。请检查 API 密钥配置后重启 SillyTavern。');
       return;
     }
 
-    // Get chat messages
-    const messages = getChatMessages();
+    var messages = getChatMessages();
 
     if (!messages || messages.length === 0) {
-      alert('No chat messages found. Open a chat first, then try batch generation.');
+      alert('未找到聊天消息。请先打开一个聊天，再执行批量生成。');
       return;
     }
 
-    // Read slice size from form
-    const sliceInput = document.getElementById('ec-batch-slice');
-    const sliceSize = parseInt(sliceInput?.value || '5', 10);
+    var sliceInput = document.getElementById('ec-batch-slice');
+    var sliceSize = parseInt(sliceInput ? sliceInput.value : '5', 10);
 
-    // Warn about token consumption
     if (!showTokenWarning(messages.length, sliceSize)) {
       return;
     }
 
-    // Show progress UI
-    const startBtn = document.getElementById('ec-batch-start');
-    const resumeBtn = document.getElementById('ec-batch-resume');
-    const progressContainer = document.getElementById('ec-batch-progress-container');
-    const progressFill = document.getElementById('ec-batch-progress-fill');
-    const progressText = document.getElementById('ec-batch-progress-text');
-    const statusSpan = document.getElementById('ec-batch-status');
+    // 显示进度 UI
+    var startBtn = document.getElementById('ec-batch-start');
+    var resumeBtn = document.getElementById('ec-batch-resume');
+    var progressContainer = document.getElementById('ec-batch-progress-container');
+    var progressFill = document.getElementById('ec-batch-progress-fill');
+    var progressText = document.getElementById('ec-batch-progress-text');
+    var statusSpan = document.getElementById('ec-batch-status');
 
     if (progressContainer) progressContainer.style.display = 'block';
     if (startBtn) { startBtn.style.display = 'none'; startBtn.disabled = true; }
     if (resumeBtn) resumeBtn.style.display = 'none';
-    if (statusSpan) { statusSpan.textContent = 'Starting...'; statusSpan.style.color = '#ffaa00'; }
+    if (statusSpan) { statusSpan.textContent = '正在启动...'; statusSpan.style.color = '#ffaa00'; }
 
-    // Get chat ID
-    const chatId = api.getCurrentChatId ? api.getCurrentChatId() : 'batch';
+    var chatId = api.getCurrentChatId ? api.getCurrentChatId() : 'batch';
 
-    // Start batch
     api.startBatchGeneration({
-      chatId,
-      messages,
-      sliceSize,
+      chatId: chatId,
+      messages: messages,
+      sliceSize: sliceSize,
       onProgress: function(progress) {
-        const pct = Math.round((progress.current / progress.total) * 100);
+        var pct = Math.round((progress.current / progress.total) * 100);
         if (progressFill) progressFill.style.width = pct + '%';
         if (progressText) {
           progressText.textContent =
-            `${progress.current} / ${progress.total} messages · ${progress.eventsFound} events found`;
+            progress.current + ' / ' + progress.total + ' 条消息 · 已发现 ' + progress.eventsFound + ' 个事件';
         }
         if (statusSpan) {
-          statusSpan.textContent = `${pct}% complete`;
+          statusSpan.textContent = '已完成 ' + pct + '%';
           statusSpan.style.color = '#ffaa00';
         }
       },
       onComplete: function(result) {
         if (progressFill) progressFill.style.width = '100%';
         if (progressText) {
-          progressText.textContent = `Complete! ${result.totalEvents} total events generated.`;
+          progressText.textContent = '生成完成！共 ' + result.totalEvents + ' 个事件。';
         }
         if (statusSpan) {
-          statusSpan.textContent = '✓ Done!';
+          statusSpan.textContent = '✓ 完成';
           statusSpan.style.color = '#4caf50';
         }
-        // Hide progress after delay, restore button
         setTimeout(function() {
           if (progressContainer) progressContainer.style.display = 'none';
           if (startBtn) { startBtn.style.display = ''; startBtn.disabled = false; }
           if (statusSpan) { statusSpan.textContent = ''; }
         }, 4000);
 
-        // Notify settings change
         if (api.onSettingsChanged) api.onSettingsChanged();
       },
       onError: function(err) {
         if (statusSpan) {
-          statusSpan.textContent = 'Error: ' + (err.message || err);
+          statusSpan.textContent = '错误: ' + (err.message || err);
           statusSpan.style.color = '#f44336';
         }
         if (startBtn) { startBtn.style.display = ''; startBtn.disabled = false; }
         checkBatchResumability();
 
-        // Toast
         if (window.parent && window.parent.toastr) {
-          window.parent.toastr.error('Batch generation error: ' + (err.message || err));
+          window.parent.toastr.error('批量生成失败: ' + (err.message || err));
         }
       },
     });
   }
 
   function checkBatchResumability() {
-    const api = getAPI();
+    var api = getAPI();
     if (!api || !api.getBatchProgress) return;
 
-    let chatId = 'batch';
+    var chatId = 'batch';
     try { chatId = api.getCurrentChatId ? api.getCurrentChatId() : 'batch'; } catch (e) {}
 
-    const progress = api.getBatchProgress(chatId);
-    const resumeBtn = document.getElementById('ec-batch-resume');
+    var progress = api.getBatchProgress(chatId);
+    var resumeBtn = document.getElementById('ec-batch-resume');
 
     if (progress && !progress.completed && progress.lastProcessedIndex > 0) {
       if (resumeBtn) {
         resumeBtn.style.display = '';
         resumeBtn.textContent =
-          '↻ Resume (' + progress.lastProcessedIndex + '/' + progress.totalMessages + ')';
+          '↻ 继续 (' + progress.lastProcessedIndex + '/' + progress.totalMessages + ')';
       }
     } else {
       if (resumeBtn) resumeBtn.style.display = 'none';
@@ -225,24 +214,21 @@
   }
 
   // -----------------------------------------------------------------------
-  // Form change → notify index.js for re-init
+  // 表单变更 → 通知 index.js 重新初始化
   // -----------------------------------------------------------------------
 
   function setupFormWatcher() {
-    const form = document.getElementById('ec-settings-container');
+    var form = document.getElementById('ec-settings-container');
     if (!form) return;
 
-    // Watch for input changes and notify extension
-    const inputs = form.querySelectorAll('input[name]');
+    var inputs = form.querySelectorAll('input[name]');
     inputs.forEach(function(input) {
       input.addEventListener('change', function() {
-        // Debounce: wait 1 second after last change
         clearTimeout(window._ecSettingsTimer);
         window._ecSettingsTimer = setTimeout(function() {
-          const api = getAPI();
+          var api = getAPI();
           if (api && api.onSettingsChanged) {
             api.onSettingsChanged();
-            // Update status display after re-init
             setTimeout(updateStatus, 2000);
           }
         }, 1000);
@@ -251,36 +237,30 @@
   }
 
   // -----------------------------------------------------------------------
-  // Initialization
+  // 初始化
   // -----------------------------------------------------------------------
 
   function init() {
-    // Bind batch button
-    const startBtn = document.getElementById('ec-batch-start');
-    const resumeBtn = document.getElementById('ec-batch-resume');
+    var startBtn = document.getElementById('ec-batch-start');
+    var resumeBtn = document.getElementById('ec-batch-resume');
 
     if (startBtn) startBtn.addEventListener('click', handleBatchStart);
     if (resumeBtn) resumeBtn.addEventListener('click', handleBatchStart);
 
-    // Initial status check (may take a moment for SDK to init)
     setTimeout(updateStatus, 1000);
     setTimeout(checkBatchResumability, 1500);
 
-    // Periodic status update
     pollInterval = setInterval(updateStatus, 10000);
 
-    // Watch form changes
     setupFormWatcher();
   }
 
-  // Start when DOM is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
   }
 
-  // Cleanup on unload
   window.addEventListener('beforeunload', function() {
     if (pollInterval) clearInterval(pollInterval);
   });

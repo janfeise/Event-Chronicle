@@ -1,27 +1,26 @@
-<!-- settings.html — Event Chronicle Extension Settings Panel -->
-<!-- Injected inline by SillyTavern into the extension settings tab. -->
-<!-- ST auto-persists all <input name="..."> values to extension_settings['event-chronicle']. -->
+<!-- settings.html — Event Chronicle 扩展设置面板 -->
+<!-- 由 SillyTavern 内联注入到扩展设置标签页中。 -->
+<!-- ST 自动持久化所有带 name 属性的 <input> 值到 extension_settings['event-chronicle']。 -->
 
 <div id="ec-settings-container">
-  <h3>Event Chronicle</h3>
+  <h3>📜 Event Chronicle · 事件编年史</h3>
   <p class="ec-desc">
-    Automatically extract structured events from roleplay chats and inject chronicle
-    memory into LLM context.
+    从角色扮演对话中自动提取结构化事件，构建可视时间线，注入长期记忆。
     <a href="/extensions/event-chronicle/event-ui/timeline.html" target="_blank"
-       class="ec-link">Open Timeline Browser ↗</a>
+       class="ec-link">打开时间线浏览器 ↗</a>
   </p>
 
   <hr>
 
   <!-- ================================================================= -->
-  <!-- Section 1: Auto-Extraction                                       -->
+  <!-- 第 1 节：自动提取                                                 -->
   <!-- ================================================================= -->
-  <h4>Auto-Extraction</h4>
+  <h4>自动提取</h4>
 
   <div class="ec-form-group">
     <label for="ec-extract-trigger">
-      Extract every N messages
-      <span class="ec-hint">Trigger event extraction when message count reaches this threshold</span>
+      每 N 条消息触发提取
+      <span class="ec-hint">当聊天消息数累计达到该阈值时自动触发事件提取</span>
     </label>
     <input type="number" id="ec-extract-trigger" name="extractTriggerCount"
            min="3" max="100" value="10" step="1">
@@ -29,8 +28,8 @@
 
   <div class="ec-form-group">
     <label for="ec-merge-trigger">
-      Merge after N new events
-      <span class="ec-hint">Trigger auto-merge when this many new events accumulate</span>
+      每 N 条新事件触发整理
+      <span class="ec-hint">累计新增事件数达到该阈值时自动触发合并去重</span>
     </label>
     <input type="number" id="ec-merge-trigger" name="mergeTriggerCount"
            min="2" max="50" value="5" step="1">
@@ -38,8 +37,8 @@
 
   <div class="ec-form-group">
     <label for="ec-max-tokens">
-      Max output tokens (override ST default)
-      <span class="ec-hint">2048+ recommended — ensures complete JSON output from LLM</span>
+      最大输出 Token（覆盖 ST 默认值）
+      <span class="ec-hint">建议 2048 以上——确保 LLM 输出完整 JSON 结构</span>
     </label>
     <input type="number" id="ec-max-tokens" name="overrideMaxTokens"
            min="256" max="16384" value="2048" step="256">
@@ -48,47 +47,46 @@
   <hr>
 
   <!-- ================================================================= -->
-  <!-- Section 2: LLM Override (optional)                                -->
+  <!-- 第 2 节：模型设置（可选）                                         -->
   <!-- ================================================================= -->
-  <h4>LLM Override <span class="ec-optional-tag">optional</span></h4>
+  <h4>模型设置 <span class="ec-optional-tag">可选</span></h4>
   <p class="ec-desc">
-    Use a different model for event extraction &amp; merging. Leave blank to
-    use SillyTavern's default LLM configuration.
+    为事件提取和合并使用独立的模型。留空则使用 SillyTavern 全局配置。
   </p>
 
   <div class="ec-form-row">
     <div class="ec-form-group ec-half">
-      <label for="ec-llm-provider">Provider</label>
+      <label for="ec-llm-provider">提供商</label>
       <input type="text" id="ec-llm-provider" name="llmOverride.provider"
-             placeholder="e.g. openai">
+             placeholder="例如 openai">
     </div>
     <div class="ec-form-group ec-half">
-      <label for="ec-llm-model">Model</label>
+      <label for="ec-llm-model">模型名称</label>
       <input type="text" id="ec-llm-model" name="llmOverride.model"
-             placeholder="e.g. gpt-4o-mini">
+             placeholder="例如 gpt-4o-mini">
     </div>
   </div>
 
   <div class="ec-form-group">
-    <label for="ec-llm-apikey">API Key</label>
+    <label for="ec-llm-apikey">API 密钥</label>
     <input type="password" id="ec-llm-apikey" name="llmOverride.apiKey"
-           placeholder="Override API key (leave blank to use ST default)">
+           placeholder="留空则使用 ST 全局 API Key">
   </div>
 
   <div class="ec-form-group">
-    <label for="ec-llm-baseurl">Base URL</label>
+    <label for="ec-llm-baseurl">接口地址</label>
     <input type="text" id="ec-llm-baseurl" name="llmOverride.baseUrl"
-           placeholder="e.g. https://api.openai.com/v1">
+           placeholder="例如 https://api.openai.com/v1">
   </div>
 
   <div class="ec-form-row">
     <div class="ec-form-group ec-half">
-      <label for="ec-llm-temperature">Temperature</label>
+      <label for="ec-llm-temperature">生成温度</label>
       <input type="number" id="ec-llm-temperature" name="llmOverride.temperature"
              min="0" max="2" value="0" step="0.1">
     </div>
     <div class="ec-form-group ec-half">
-      <label for="ec-llm-max-tokens">Max Tokens</label>
+      <label for="ec-llm-max-tokens">最大 Token</label>
       <input type="number" id="ec-llm-max-tokens" name="llmOverride.maxTokens"
              min="256" max="16384" value="2048" step="256">
     </div>
@@ -97,19 +95,18 @@
   <hr>
 
   <!-- ================================================================= -->
-  <!-- Section 3: One-Click Batch Generation                            -->
+  <!-- 第 3 节：一键批量生成                                             -->
   <!-- ================================================================= -->
-  <h4>One-Click Batch Generation</h4>
+  <h4>一键批量生成</h4>
   <p class="ec-desc">
-    Generate events from the <strong>entire chat history</strong> using incremental
-    slices to avoid exceeding LLM context limits.
-    <span class="ec-warning">⚠ Warning: This will consume API tokens!</span>
+    从<strong>整个聊天历史</strong>中生成事件数据，使用增量切片避免超出 LLM 上下文限制。
+    <span class="ec-warning">⚠ 注意：此操作将消耗大量 API Token！</span>
   </p>
 
   <div class="ec-form-group">
     <label for="ec-batch-slice">
-      Messages per slice
-      <span class="ec-hint">Fewer messages = more LLM calls but less tokens per call</span>
+      每次发送消息数
+      <span class="ec-hint">每批消息越少 = LLM 调用次数越多，但单次 Token 消耗越少</span>
     </label>
     <input type="number" id="ec-batch-slice" name="batchSliceSize"
            min="2" max="20" value="5" step="1">
@@ -117,10 +114,10 @@
 
   <div class="ec-actions">
     <button id="ec-batch-start" class="ec-btn ec-btn-primary">
-      ▶ Start Batch Generation
+      ▶ 开始批量生成
     </button>
     <button id="ec-batch-resume" class="ec-btn ec-btn-secondary" style="display:none;">
-      ↻ Resume Batch
+      ↻ 继续上次进度
     </button>
     <span id="ec-batch-status" class="ec-status"></span>
   </div>
@@ -135,18 +132,18 @@
   <hr>
 
   <!-- ================================================================= -->
-  <!-- Section 4: Status                                                -->
+  <!-- 第 4 节：运行状态                                                 -->
   <!-- ================================================================= -->
-  <h4>Status</h4>
+  <h4>运行状态</h4>
   <div class="ec-status-display">
     <span id="ec-status-indicator" class="ec-indicator checking"></span>
-    <span id="ec-status-text">Checking...</span>
+    <span id="ec-status-text">正在检测...</span>
   </div>
   <div id="ec-status-detail" class="ec-status-detail"></div>
 </div>
 
 <!-- ===================================================================== -->
-<!-- Styles                                                                -->
+<!-- 样式（无变更）                                                        -->
 <!-- ===================================================================== -->
 <style>
   #ec-settings-container {
@@ -183,7 +180,6 @@
     color: #888;
     font-size: 0.75em;
     font-weight: normal;
-    text-transform: uppercase;
   }
 
   /* Form groups */
@@ -278,6 +274,6 @@
 </style>
 
 <!-- ===================================================================== -->
-<!-- Script                                                               -->
+<!-- 脚本                                                                  -->
 <!-- ===================================================================== -->
 <script src="/extensions/event-chronicle/settings/settings.js"></script>

@@ -48,7 +48,7 @@
   window.openEditModal = function(eventId) {
     var bridge = getBridge();
     if (!bridge) {
-      alert('Extension not available.');
+      alert('扩展不可用。');
       return;
     }
 
@@ -61,13 +61,13 @@
       }
     }
     if (!event) {
-      alert('Event not found.');
+      alert('未找到该事件。');
       return;
     }
 
     currentEditEventId = eventId;
 
-    document.getElementById('ec-modal-title').textContent = 'Edit: ' + (event.title || 'Untitled');
+    document.getElementById('ec-modal-title').textContent = '编辑: ' + (event.title || '未命名');
     document.getElementById('ec-edit-title').value = event.title || '';
     document.getElementById('ec-edit-summary').value = event.summary || '';
     document.getElementById('ec-edit-importance').value = event.importance || 5;
@@ -107,7 +107,7 @@
     var chatId = findChatIdForEvent(currentEditEventId);
 
     if (!chatId) {
-      alert('Cannot determine which chat this event belongs to. Please refresh and try again.');
+      alert('无法确定此事件所属的聊天。请刷新后重试。');
       return;
     }
 
@@ -116,7 +116,7 @@
       closeEditModal();
       if (window.refreshTimeline) window.refreshTimeline();
     } else {
-      alert('Failed to update event. It may have been deleted.');
+      alert('更新事件失败。该事件可能已被删除。');
     }
   };
 
@@ -138,12 +138,12 @@
       }
     }
 
-    var title = event ? (event.title || 'Untitled') : eventId;
-    if (!confirm('Delete event "' + title + '"?\n\nThis cannot be undone.')) return;
+    var title = event ? (event.title || '未命名') : eventId;
+    if (!confirm('删除事件 "' + title + '"?\n\n此操作不可撤销。')) return;
 
     var chatId = findChatIdForEvent(eventId);
     if (!chatId) {
-      alert('Cannot determine which chat this event belongs to. Please refresh and try again.');
+      alert('无法确定此事件所属的聊天。请刷新后重试。');
       return;
     }
 
@@ -152,10 +152,10 @@
       if (window.refreshTimeline) window.refreshTimeline();
       // Toast notification
       if (window.parent && window.parent.toastr) {
-        window.parent.toastr.success('Event deleted: ' + title);
+        window.parent.toastr.success('事件已删除: ' + title);
       }
     } else {
-      alert('Failed to delete event. It may have already been deleted.');
+      alert('删除事件失败。该事件可能已被删除。');
     }
   };
 

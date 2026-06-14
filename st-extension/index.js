@@ -223,7 +223,7 @@ async function init() {
   if (!llmConfig.apiKey) {
     console.warn('[Event Chronicle] No API key configured. Extension will be idle.');
     console.warn('[Event Chronicle] Set LLM_API_KEY in .env or configure in extension settings.');
-    showToast('warning', 'No API key configured. Please set one in extension settings.');
+    showToast('warning', '未配置 API 密钥。请在扩展设置中配置。');
     sdkReady = false;
     return;
   }
@@ -244,7 +244,7 @@ async function init() {
   } catch (err) {
     console.error('[Event Chronicle] Init failed:', err.message);
     sdkReady = false;
-    showToast('error', 'Initialization failed: ' + err.message);
+    showToast('error', '初始化失败: ' + err.message);
   }
 }
 
@@ -288,7 +288,7 @@ async function triggerExtraction() {
     }
   } catch (err) {
     console.error('[Event Chronicle] Extraction failed:', err.message);
-    showToast('error', 'Event extraction failed: ' + err.message);
+    showToast('error', '事件提取失败: ' + err.message);
   }
 }
 
@@ -422,11 +422,11 @@ function onSettingsChanged() {
     ecBridge.reinit({ llmConfig }).then(() => {
       sdkReady = true;
       console.log('[Event Chronicle] Re-initialized with new LLM config');
-      showToast('success', 'LLM configuration updated');
+      showToast('success', 'LLM 配置已更新');
     }).catch(err => {
       sdkReady = false;
       console.error('[Event Chronicle] Re-init failed:', err.message);
-      showToast('error', 'Failed to update LLM config: ' + err.message);
+      showToast('error', '更新 LLM 配置失败: ' + err.message);
     });
   }
 
@@ -527,5 +527,5 @@ init().then(() => {
   registerHooks();
 }).catch(err => {
   console.error('[Event Chronicle] Fatal initialization error:', err);
-  showToast('error', 'Failed to start: ' + err.message);
+  showToast('error', '启动失败: ' + err.message);
 });
