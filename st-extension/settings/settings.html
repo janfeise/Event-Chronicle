@@ -1,0 +1,283 @@
+<!-- settings.html — Event Chronicle Extension Settings Panel -->
+<!-- Injected inline by SillyTavern into the extension settings tab. -->
+<!-- ST auto-persists all <input name="..."> values to extension_settings['event-chronicle']. -->
+
+<div id="ec-settings-container">
+  <h3>Event Chronicle</h3>
+  <p class="ec-desc">
+    Automatically extract structured events from roleplay chats and inject chronicle
+    memory into LLM context.
+    <a href="/extensions/event-chronicle/event-ui/timeline.html" target="_blank"
+       class="ec-link">Open Timeline Browser ↗</a>
+  </p>
+
+  <hr>
+
+  <!-- ================================================================= -->
+  <!-- Section 1: Auto-Extraction                                       -->
+  <!-- ================================================================= -->
+  <h4>Auto-Extraction</h4>
+
+  <div class="ec-form-group">
+    <label for="ec-extract-trigger">
+      Extract every N messages
+      <span class="ec-hint">Trigger event extraction when message count reaches this threshold</span>
+    </label>
+    <input type="number" id="ec-extract-trigger" name="extractTriggerCount"
+           min="3" max="100" value="10" step="1">
+  </div>
+
+  <div class="ec-form-group">
+    <label for="ec-merge-trigger">
+      Merge after N new events
+      <span class="ec-hint">Trigger auto-merge when this many new events accumulate</span>
+    </label>
+    <input type="number" id="ec-merge-trigger" name="mergeTriggerCount"
+           min="2" max="50" value="5" step="1">
+  </div>
+
+  <div class="ec-form-group">
+    <label for="ec-max-tokens">
+      Max output tokens (override ST default)
+      <span class="ec-hint">2048+ recommended — ensures complete JSON output from LLM</span>
+    </label>
+    <input type="number" id="ec-max-tokens" name="overrideMaxTokens"
+           min="256" max="16384" value="2048" step="256">
+  </div>
+
+  <hr>
+
+  <!-- ================================================================= -->
+  <!-- Section 2: LLM Override (optional)                                -->
+  <!-- ================================================================= -->
+  <h4>LLM Override <span class="ec-optional-tag">optional</span></h4>
+  <p class="ec-desc">
+    Use a different model for event extraction &amp; merging. Leave blank to
+    use SillyTavern's default LLM configuration.
+  </p>
+
+  <div class="ec-form-row">
+    <div class="ec-form-group ec-half">
+      <label for="ec-llm-provider">Provider</label>
+      <input type="text" id="ec-llm-provider" name="llmOverride.provider"
+             placeholder="e.g. openai">
+    </div>
+    <div class="ec-form-group ec-half">
+      <label for="ec-llm-model">Model</label>
+      <input type="text" id="ec-llm-model" name="llmOverride.model"
+             placeholder="e.g. gpt-4o-mini">
+    </div>
+  </div>
+
+  <div class="ec-form-group">
+    <label for="ec-llm-apikey">API Key</label>
+    <input type="password" id="ec-llm-apikey" name="llmOverride.apiKey"
+           placeholder="Override API key (leave blank to use ST default)">
+  </div>
+
+  <div class="ec-form-group">
+    <label for="ec-llm-baseurl">Base URL</label>
+    <input type="text" id="ec-llm-baseurl" name="llmOverride.baseUrl"
+           placeholder="e.g. https://api.openai.com/v1">
+  </div>
+
+  <div class="ec-form-row">
+    <div class="ec-form-group ec-half">
+      <label for="ec-llm-temperature">Temperature</label>
+      <input type="number" id="ec-llm-temperature" name="llmOverride.temperature"
+             min="0" max="2" value="0" step="0.1">
+    </div>
+    <div class="ec-form-group ec-half">
+      <label for="ec-llm-max-tokens">Max Tokens</label>
+      <input type="number" id="ec-llm-max-tokens" name="llmOverride.maxTokens"
+             min="256" max="16384" value="2048" step="256">
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- ================================================================= -->
+  <!-- Section 3: One-Click Batch Generation                            -->
+  <!-- ================================================================= -->
+  <h4>One-Click Batch Generation</h4>
+  <p class="ec-desc">
+    Generate events from the <strong>entire chat history</strong> using incremental
+    slices to avoid exceeding LLM context limits.
+    <span class="ec-warning">⚠ Warning: This will consume API tokens!</span>
+  </p>
+
+  <div class="ec-form-group">
+    <label for="ec-batch-slice">
+      Messages per slice
+      <span class="ec-hint">Fewer messages = more LLM calls but less tokens per call</span>
+    </label>
+    <input type="number" id="ec-batch-slice" name="batchSliceSize"
+           min="2" max="20" value="5" step="1">
+  </div>
+
+  <div class="ec-actions">
+    <button id="ec-batch-start" class="ec-btn ec-btn-primary">
+      ▶ Start Batch Generation
+    </button>
+    <button id="ec-batch-resume" class="ec-btn ec-btn-secondary" style="display:none;">
+      ↻ Resume Batch
+    </button>
+    <span id="ec-batch-status" class="ec-status"></span>
+  </div>
+
+  <div id="ec-batch-progress-container" style="display:none;">
+    <div class="ec-progress-bar">
+      <div id="ec-batch-progress-fill" class="ec-progress-fill"></div>
+    </div>
+    <div id="ec-batch-progress-text" class="ec-progress-text"></div>
+  </div>
+
+  <hr>
+
+  <!-- ================================================================= -->
+  <!-- Section 4: Status                                                -->
+  <!-- ================================================================= -->
+  <h4>Status</h4>
+  <div class="ec-status-display">
+    <span id="ec-status-indicator" class="ec-indicator checking"></span>
+    <span id="ec-status-text">Checking...</span>
+  </div>
+  <div id="ec-status-detail" class="ec-status-detail"></div>
+</div>
+
+<!-- ===================================================================== -->
+<!-- Styles                                                                -->
+<!-- ===================================================================== -->
+<style>
+  #ec-settings-container {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #d4d4d4;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  #ec-settings-container h3 {
+    margin-bottom: 0.3em;
+    color: #fff;
+    font-size: 18px;
+  }
+  #ec-settings-container h4 {
+    margin-top: 1.2em;
+    margin-bottom: 0.5em;
+    color: #ccc;
+    font-size: 15px;
+  }
+  .ec-desc {
+    color: #999;
+    font-size: 0.9em;
+    margin-bottom: 1em;
+  }
+  .ec-hint {
+    display: block;
+    color: #777;
+    font-size: 0.8em;
+    font-weight: normal;
+    margin-top: 2px;
+  }
+  .ec-warning { color: #ffaa00; font-weight: 500; }
+  .ec-optional-tag {
+    color: #888;
+    font-size: 0.75em;
+    font-weight: normal;
+    text-transform: uppercase;
+  }
+
+  /* Form groups */
+  .ec-form-group { margin-bottom: 0.9em; }
+  .ec-form-group label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 500;
+    color: #ccc;
+  }
+  .ec-form-group input {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid #444;
+    border-radius: 4px;
+    background: #1a1a1a;
+    color: #e0e0e0;
+    font-size: 14px;
+    box-sizing: border-box;
+  }
+  .ec-form-group input:focus {
+    border-color: #6c8cff;
+    outline: none;
+  }
+  .ec-form-row { display: flex; gap: 12px; }
+  .ec-half { flex: 1; }
+
+  /* Buttons */
+  .ec-actions { margin: 1em 0; display: flex; align-items: center; gap: 10px; }
+  .ec-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+  }
+  .ec-btn-primary { background: #4a6cf7; color: white; }
+  .ec-btn-primary:hover { background: #5a7cf7; }
+  .ec-btn-primary:disabled { background: #333; color: #666; cursor: not-allowed; }
+  .ec-btn-secondary { background: #444; color: #ccc; }
+  .ec-btn-secondary:hover { background: #555; }
+
+  /* Status */
+  .ec-status { color: #999; font-size: 0.9em; }
+  .ec-status-display { display: flex; align-items: center; gap: 8px; }
+  .ec-indicator {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .ec-indicator.ready { background: #4caf50; }
+  .ec-indicator.error { background: #f44336; }
+  .ec-indicator.checking { background: #ffaa00; animation: ec-pulse 1s infinite; }
+  .ec-status-detail { margin-top: 6px; font-size: 0.8em; color: #777; }
+
+  /* Progress bar */
+  .ec-progress-bar {
+    width: 100%; height: 8px;
+    background: #2a2a2a;
+    border-radius: 4px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+  .ec-progress-fill {
+    height: 100%;
+    background: #4a6cf7;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    width: 0%;
+  }
+  .ec-progress-text { font-size: 0.8em; color: #999; margin-top: 4px; }
+
+  /* Link */
+  .ec-link {
+    color: #6c8cff;
+    font-size: 0.9em;
+    margin-left: 8px;
+  }
+
+  @keyframes ec-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid #333;
+    margin: 16px 0;
+  }
+</style>
+
+<!-- ===================================================================== -->
+<!-- Script                                                               -->
+<!-- ===================================================================== -->
+<script src="/extensions/event-chronicle/settings/settings.js"></script>

@@ -1,0 +1,346 @@
+<!-- timeline.html — Event Chronicle Timeline Browser -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Chronicle — Timeline</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #d4d4d4;
+      padding: 24px;
+      min-height: 100vh;
+    }
+
+    /* ---- Header ---- */
+    .ec-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #2a2a4a;
+    }
+    .ec-header h1 {
+      font-size: 22px;
+      color: #fff;
+      font-weight: 600;
+    }
+    .ec-header-actions { display: flex; gap: 10px; }
+
+    /* ---- Buttons ---- */
+    .ec-btn {
+      padding: 7px 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background 0.2s, opacity 0.2s;
+    }
+    .ec-btn:hover { opacity: 0.9; }
+    .ec-btn-primary { background: #4a6cf7; color: white; }
+    .ec-btn-secondary { background: #3a3a5a; color: #ccc; }
+    .ec-btn-secondary:hover { background: #4a4a6a; }
+    .ec-btn-danger { background: #d32f2f; color: white; }
+    .ec-btn-danger:hover { background: #e53935; }
+    .ec-btn-sm { padding: 4px 10px; font-size: 12px; }
+
+    /* ---- Filters ---- */
+    .ec-filters {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .ec-filters select,
+    .ec-filters input {
+      padding: 6px 10px;
+      border: 1px solid #3a3a5a;
+      border-radius: 4px;
+      background: #12122a;
+      color: #d4d4d4;
+      font-size: 13px;
+    }
+    .ec-filters select:focus,
+    .ec-filters input:focus {
+      border-color: #6c8cff;
+      outline: none;
+    }
+    .ec-filter-search { flex: 1; min-width: 180px; }
+    .ec-event-count { color: #888; font-size: 13px; margin-left: auto; }
+
+    /* ---- Group Header ---- */
+    .ec-group-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      margin: 24px 0 10px 0;
+      border-bottom: 1px dashed #2a2a4a;
+    }
+    .ec-group-header h3 {
+      font-size: 15px;
+      color: #aaa;
+      font-weight: 500;
+    }
+    .ec-badge {
+      background: #2a2a4a;
+      color: #999;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
+    /* ---- Event Card ---- */
+    .ec-timeline { display: flex; flex-direction: column; gap: 8px; }
+
+    .ec-event-card {
+      background: #16213e;
+      border: 1px solid #2a2a4a;
+      border-radius: 8px;
+      padding: 14px 16px;
+      transition: border-color 0.2s;
+    }
+    .ec-event-card:hover { border-color: #4a6cf7; }
+
+    .ec-event-time {
+      font-size: 11px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+
+    .ec-event-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    .ec-event-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+    }
+    .ec-event-stars {
+      white-space: nowrap;
+      margin-left: 10px;
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+    .ec-star-filled { color: #ffd700; }
+    .ec-star-empty { color: #3a3a5a; }
+
+    .ec-event-summary {
+      font-size: 14px;
+      color: #bbb;
+      line-height: 1.6;
+      margin-bottom: 10px;
+    }
+
+    .ec-event-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 8px;
+    }
+    .ec-event-meta span {
+      background: #1e1e3a;
+      padding: 2px 8px;
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+
+    .ec-event-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+    .ec-tag {
+      background: #2a2a5a;
+      color: #8090d0;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 3px;
+    }
+
+    .ec-event-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+    }
+
+    /* ---- Empty State ---- */
+    .ec-empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: #666;
+    }
+    .ec-empty .ec-empty-icon { font-size: 48px; margin-bottom: 12px; }
+    .ec-empty p { margin-top: 8px; font-size: 14px; }
+
+    /* ---- Modal Overlay ---- */
+    .ec-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.65);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .ec-modal-overlay.active { display: flex; }
+
+    .ec-modal {
+      background: #1e1e3a;
+      border: 1px solid #3a3a5a;
+      border-radius: 8px;
+      padding: 24px;
+      width: 520px;
+      max-width: 92vw;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+    .ec-modal h3 {
+      margin-bottom: 18px;
+      color: #fff;
+      font-size: 17px;
+    }
+    .ec-modal .ec-form-group { margin-bottom: 12px; }
+    .ec-modal label {
+      display: block;
+      margin-bottom: 4px;
+      font-weight: 500;
+      color: #ccc;
+      font-size: 13px;
+    }
+    .ec-modal input,
+    .ec-modal textarea,
+    .ec-modal select {
+      width: 100%;
+      padding: 7px 10px;
+      border: 1px solid #3a3a5a;
+      border-radius: 4px;
+      background: #12122a;
+      color: #d4d4d4;
+      font-size: 14px;
+    }
+    .ec-modal textarea { min-height: 80px; resize: vertical; }
+    .ec-modal input:focus,
+    .ec-modal textarea:focus { border-color: #6c8cff; outline: none; }
+    .ec-modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 600px) {
+      body { padding: 12px; }
+      .ec-filters { flex-direction: column; }
+      .ec-event-card-header { flex-direction: column; }
+      .ec-event-stars { margin-left: 0; margin-top: 4px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================================================================= -->
+  <!-- Header                                                            -->
+  <!-- ================================================================= -->
+  <div class="ec-header">
+    <h1>📜 Event Chronicle Timeline</h1>
+    <div class="ec-header-actions">
+      <button class="ec-btn ec-btn-secondary" onclick="refreshTimeline()">⟳ Refresh</button>
+      <button class="ec-btn ec-btn-primary" onclick="exportMemory()">📋 Export Memory</button>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- Filters                                                           -->
+  <!-- ================================================================= -->
+  <div class="ec-filters">
+    <select id="ec-filter-chat" onchange="applyFilters()">
+      <option value="">All Locations</option>
+    </select>
+    <select id="ec-filter-importance" onchange="applyFilters()">
+      <option value="0">All Importance</option>
+      <option value="5">★ 5+ (Notable)</option>
+      <option value="7">★ 7+ (Key Events)</option>
+      <option value="9">★ 9+ (Story Defining)</option>
+    </select>
+    <input type="text" id="ec-filter-search" class="ec-filter-search"
+           placeholder="Search events..." oninput="applyFilters()">
+    <span id="ec-event-count" class="ec-event-count"></span>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- Timeline Container                                                -->
+  <!-- ================================================================= -->
+  <div id="ec-timeline-container" class="ec-timeline">
+    <div class="ec-empty">
+      <div class="ec-empty-icon">📭</div>
+      <p>Loading events...</p>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- Edit Modal                                                        -->
+  <!-- ================================================================= -->
+  <div id="ec-edit-modal" class="ec-modal-overlay">
+    <div class="ec-modal">
+      <h3 id="ec-modal-title">Edit Event</h3>
+
+      <div class="ec-form-group">
+        <label>Title</label>
+        <input type="text" id="ec-edit-title" placeholder="Event title">
+      </div>
+
+      <div class="ec-form-group">
+        <label>Summary</label>
+        <textarea id="ec-edit-summary" placeholder="Event summary"></textarea>
+      </div>
+
+      <div class="ec-form-group">
+        <label>Importance (1–10)</label>
+        <input type="number" id="ec-edit-importance" min="1" max="10" value="5">
+      </div>
+
+      <div class="ec-form-group">
+        <label>Participants (comma-separated)</label>
+        <input type="text" id="ec-edit-participants" placeholder="e.g. 战士, 法师, 盗贼">
+      </div>
+
+      <div class="ec-form-group">
+        <label>Location</label>
+        <input type="text" id="ec-edit-location" placeholder="e.g. Tavern">
+      </div>
+
+      <div class="ec-form-group">
+        <label>Tags (comma-separated)</label>
+        <input type="text" id="ec-edit-tags" placeholder="e.g. discovery, quest, combat">
+      </div>
+
+      <div class="ec-modal-actions">
+        <button class="ec-btn ec-btn-secondary" onclick="closeEditModal()">Cancel</button>
+        <button class="ec-btn ec-btn-primary" onclick="saveEdit()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- Scripts                                                           -->
+  <!-- ================================================================= -->
+  <script src="/extensions/event-chronicle/event-ui/timeline.js"></script>
+  <script src="/extensions/event-chronicle/event-ui/editor.js"></script>
+
+</body>
+</html>
