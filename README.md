@@ -24,7 +24,7 @@ Event Chronicle 从对话中提取事件，以编年史的方式记录关键经�
 
 假设有以下聊天信息
 
-![img](.\img\demo-02.png)
+![img](./img/demo-02.png)
 
 Event Chronicle 不会保存整段聊天，只会从中提取事件
 
