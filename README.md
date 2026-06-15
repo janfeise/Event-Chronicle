@@ -14,9 +14,9 @@
 
 > 让对话不只是对话，而是一部持续书写的可视编年史
 
-Event Chronicle 从对话中提取事件，以编年史的方式记录关键经历、决策与重要变化，按时间顺序构建可视化事件时间线。这些事件被长期保存，可在未来对话中注入模型上下文——使 AI 基于历史事实而非压缩摘要进行推理
+Event Chronicle 从 AI 对话中提取结构化事件，并以时间线形式长期保存。在未来对话中，这些历史事件会重新注入模型上下文，使 AI 基于已发生的事实而非压缩后的摘要进行理解与推理，从而形成连贯、可追溯的长期记忆
 
-**记忆不是摘要**：摘要告诉你聊了什么；编年史告诉你在这些对话中**发生了什么**
+支持 **Node.js** 和 **浏览器** 两种环境
 
 ---
 
@@ -24,7 +24,7 @@ Event Chronicle 从对话中提取事件，以编年史的方式记录关键经�
 
 假设有以下聊天信息
 
-![img](./img/demo-02.png)
+![img](./img/demo-03.png)
 
 Event Chronicle 不会保存整段聊天，只会从中提取事件
 
@@ -131,22 +131,22 @@ LLM_MODEL=gpt-4o
 创建 `chronicle.ts`：
 
 ```js
-import { startup, processMessages, exportMemory } from 'event-chronicle';
+import { startup, processMessages, exportMemory } from "event-chronicle";
 
 // 1. 初始化（自动加载 .env 中的 LLM 配置）
 await startup();
 
 // 2. 传入聊天消息，自动提取事件
 const result = await processMessages([
-  { role: 'Alice', content: '我们去图书馆查资料' },
-  { role: 'Bob',   content: '好主意。那里的数据库很全。' },
-  { role: 'Alice', content: '我在历史区找到了关于失踪探险队的日志。' },
+  { role: "Alice", content: "我们去图书馆查资料" },
+  { role: "Bob", content: "好主意。那里的数据库很全。" },
+  { role: "Alice", content: "我在历史区找到了关于失踪探险队的日志。" },
 ]);
 
 console.log(result.events.length); // → 提取到的事件数
 
 // 3. 导出为 AI 记忆 Prompt
-const memory = await exportMemory('default', { highlightThreshold: 7 });
+const memory = await exportMemory("default", { highlightThreshold: 7 });
 ```
 
 运行：
@@ -210,8 +210,8 @@ const events = parseEvents(data.choices[0].message.content);
 
 ```js
 const result = await processMessages(messages, {
-  eventId: "my-story",    // 文件名
-  autoMerge: true,        // 累计事件达阈值自动合并（默认 true）
+  eventId: "my-story", // 文件名
+  autoMerge: true, // 累计事件达阈值自动合并（默认 true）
   existingEventId: "old", // 加载已有事件供 LLM 参考去重
 });
 // → { events: Event[], storedFile: string, merged: boolean }
@@ -252,14 +252,14 @@ const result = await processMessages(messages, {
 
 ### Browser SDK (`event-chronicle/browser`)
 
-| 函数/常量 | 说明 |
-|---|---|
-| `parseEvents(response)` | LLM 响应 → Event[] |
-| `formatMessages(messages)` | ChatMessage[] → 文本 |
-| `applyInstructions(events, newEvents, instructions)` | 执行合并指令 |
-| `extractPrompt` | 事件提取 Prompt 模板（含 `{{existingEvents}}` `{{recentMessages}}`） |
-| `mergePrompt` | 事件合并 Prompt 模板（含 `{{existingEvents}}` `{{newEvents}}`） |
-| `memoryPrompt` | 记忆注入 Prompt 模板（含 `{{memoryTimeline}}`） |
+| 函数/常量                                            | 说明                                                                 |
+| ---------------------------------------------------- | -------------------------------------------------------------------- |
+| `parseEvents(response)`                              | LLM 响应 → Event[]                                                   |
+| `formatMessages(messages)`                           | ChatMessage[] → 文本                                                 |
+| `applyInstructions(events, newEvents, instructions)` | 执行合并指令                                                         |
+| `extractPrompt`                                      | 事件提取 Prompt 模板（含 `{{existingEvents}}` `{{recentMessages}}`） |
+| `mergePrompt`                                        | 事件合并 Prompt 模板（含 `{{existingEvents}}` `{{newEvents}}`）      |
+| `memoryPrompt`                                       | 记忆注入 Prompt 模板（含 `{{memoryTimeline}}`）                      |
 
 ---
 
@@ -289,8 +289,8 @@ await startup({
     apiKey: "sk-xxx",
     model: "gpt-4o",
   },
-  dataDir: "./my-data",           // 自定义数据目录
-  promptsDir: "./my-prompts",     // 自定义提示词目录
+  dataDir: "./my-data", // 自定义数据目录
+  promptsDir: "./my-prompts", // 自定义提示词目录
 });
 ```
 
@@ -361,13 +361,13 @@ await startup({
 
 ## 更多资源
 
-| 文档 | 说明 |
-|---|---|
-| [ST 扩展用户文档](./st-extension/README.md) | 安装 + 功能 + 配置 |
-| [ST 扩展开发文档](./docs/st-extension-dev.md) | 架构 + 设计决策 + 开发流程 |
-| [项目开发文档](./docs/development.md) | 核心模块详解 + Browser SDK 架构 |
-| [Web Demo](./docs/README.md) | 浏览器交互式演示 |
-| [CLI Demo](./demo/README.md) | 端到端命令行演示 |
+| 文档                                          | 说明                            |
+| --------------------------------------------- | ------------------------------- |
+| [ST 扩展用户文档](./st-extension/README.md)   | 安装 + 功能 + 配置              |
+| [ST 扩展开发文档](./docs/st-extension-dev.md) | 架构 + 设计决策 + 开发流程      |
+| [项目开发文档](./docs/development.md)         | 核心模块详解 + Browser SDK 架构 |
+| [Web Demo](./docs/README.md)                  | 浏览器交互式演示                |
+| [CLI Demo](./demo/README.md)                  | 端到端命令行演示                |
 
 ## 扩展
 
