@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Chronicle SDK — Browser Compatibility Test</title>
+  <style>
+    :root {
+      --pass: #22c55e;
+      --fail: #ef4444;
+      --warn: #f59e0b;
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --border: #334155;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 2rem;
+      line-height: 1.6;
+    }
+    .container { max-width: 960px; margin: 0 auto; }
+    h1 { font-size: 1.75rem; margin-bottom: 0.25rem; }
+    .subtitle { color: var(--muted); margin-bottom: 1.5rem; font-size: 0.9rem; }
+    .summary-bar {
+      display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;
+    }
+    .summary-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 1rem 1.5rem; min-width: 100px; text-align: center;
+    }
+    .summary-card .count { font-size: 2rem; font-weight: 700; }
+    .summary-card .label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; }
+    .summary-card.pass .count { color: var(--pass); }
+    .summary-card.fail .count { color: var(--fail); }
+    .summary-card.warn .count { color: var(--warn); }
+
+    .suite {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; margin-bottom: 1rem; overflow: hidden;
+    }
+    .suite-header {
+      padding: 0.75rem 1.25rem; font-weight: 600; font-size: 1rem;
+      background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .suite-header .badge {
+      font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; font-weight: 600;
+    }
+    .badge.ok { background: #166534; color: var(--pass); }
+    .badge.fail { background: #7f1d1d; color: var(--fail); }
+
+    .case {
+      padding: 0.65rem 1.25rem; border-bottom: 1px solid var(--border);
+      display: flex; align-items: flex-start; gap: 0.75rem;
+    }
+    .case:last-child { border-bottom: none; }
+    .case .icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
+    .case .icon.pass { color: var(--pass); }
+    .case .icon.fail { color: var(--fail); }
+    .case .desc { flex: 1; font-size: 0.9rem; }
+    .case .error { color: var(--fail); font-size: 0.8rem; margin-top: 0.2rem; word-break: break-all; }
+    .case .duration { color: var(--muted); font-size: 0.75rem; flex-shrink: 0; }
+
+    .log-area {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; margin-top: 1rem; padding: 1rem;
+    }
+    .log-area h3 { font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--muted); }
+    .log-entry { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem;
+      padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .log-entry.warn { color: var(--warn); }
+    .log-entry.error { color: var(--fail); }
+
+    button {
+      background: #3b82f6; color: white; border: none; border-radius: 6px;
+      padding: 0.5rem 1.25rem; font-size: 0.9rem; cursor: pointer; font-weight: 500;
+    }
+    button:hover { background: #2563eb; }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .toolbar { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>🧪 Event Chronicle SDK — Browser Test</h1>
+  <p class="subtitle" id="env-info">Loading SDK…</p>
+
+  <div class="toolbar">
+    <button id="btn-run" onclick="runAll()">▶ Run All Tests</button>
+    <button id="btn-clear" onclick="clearLogs()">Clear Logs</button>
+  </div>
+
+  <div class="summary-bar">
+    <div class="summary-card pass"><div class="count" id="cnt-pass">—</div><div class="label">Passed</div></div>
+    <div class="summary-card fail"><div class="count" id="cnt-fail">—</div><div class="label">Failed</div></div>
+    <div class="summary-card warn"><div class="count" id="cnt-warn">—</div><div class="label">Skipped</div></div>
+  </div>
+
+  <div id="suites"></div>
+
+  <div class="log-area">
+    <h3>📋 Console Log</h3>
+    <div id="log-output"></div>
+  </div>
+</div>
+
+<script type="module">
+  // =========================================================================
+  // Import SDK from local node_modules
+  // =========================================================================
+  import {
+    parseEvents,
+    formatMessages,
+    formatEvents,
+    applyWindow,
+    exportRawFromEvents,
+    parseInstructions,
+    applyInstructions,
+    extractPrompt,
+    mergePrompt,
+    memoryPrompt,
+  } from "../../node_modules/event-chronicle/dist/browser/browser.mjs";
+
+  // Expose for inline onclick & manual console testing
+  window.EC = {
+    parseEvents, formatMessages, formatEvents, applyWindow,
+    exportRawFromEvents, parseInstructions, applyInstructions,
+    extractPrompt, mergePrompt, memoryPrompt,
+  };
+
+  document.getElementById('env-info').textContent =
+    `SDK loaded · ${new Date().toISOString()} · User-Agent: ${navigator.userAgent.slice(0, 60)}…`;
+
+  // =========================================================================
+  // Test framework (minimal, zero-dependency)
+  // =========================================================================
+  const results = [];
+  let currentSuite = null;
+
+  window.suite = function (name) {
+    currentSuite = { name, cases: [], passed: 0, failed: 0 };
+    results.push(currentSuite);
+  };
+
+  window.test = function (desc, fn) {
+    const start = performance.now();
+    let ok = true, err = null;
+    try {
+      fn();
+    } catch (e) {
+      ok = false;
+      err = e.message ?? String(e);
+    }
+    const ms = (performance.now() - start).toFixed(1);
+    const entry = { desc, ok, err, ms };
+    currentSuite.cases.push(entry);
+    if (ok) currentSuite.passed++; else currentSuite.failed++;
+  };
+
+  window.testAsync = async function (desc, fn) {
+    const start = performance.now();
+    let ok = true, err = null;
+    try {
+      await fn();
+    } catch (e) {
+      ok = false;
+      err = e.message ?? String(e);
+    }
+    const ms = (performance.now() - start).toFixed(1);
+    const entry = { desc, ok, err, ms };
+    currentSuite.cases.push(entry);
+    if (ok) currentSuite.passed++; else currentSuite.failed++;
+  };
+
+  function render() {
+    let totalPass = 0, totalFail = 0, totalWarn = 0;
+    let html = '';
+    for (const s of results) {
+      const ok = s.failed === 0;
+      html += `<div class="suite">
+        <div class="suite-header">
+          <span>${s.name}</span>
+          <span class="badge ${ok ? 'ok' : 'fail'}">${s.passed}/${s.passed + s.failed} passed</span>
+        </div>`;
+      for (const c of s.cases) {
+        const icon = c.ok ? '✅' : '❌';
+        html += `<div class="case">
+          <span class="icon ${c.ok ? 'pass' : 'fail'}">${icon}</span>
+          <span class="desc">${c.desc}</span>
+          <span class="duration">${c.ms}ms</span>
+        </div>`;
+        if (!c.ok) {
+          html += `<div class="case"><span></span><span class="error">${esc(c.err)}</span></div>`;
+        }
+      }
+      html += `</div>`;
+      totalPass += s.passed;
+      totalFail += s.failed;
+    }
+    document.getElementById('suites').innerHTML = html;
+    document.getElementById('cnt-pass').textContent = totalPass;
+    document.getElementById('cnt-fail').textContent = totalFail;
+    document.getElementById('cnt-warn').textContent = totalWarn;
+  }
+
+  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  // Capture console.warn/error for display
+  const logEl = document.getElementById('log-output');
+  function addLog(level, ...args) {
+    const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
+    const div = document.createElement('div');
+    div.className = `log-entry ${level}`;
+    div.textContent = `[${level.toUpperCase()}] ${msg}`;
+    logEl.appendChild(div);
+  }
+  const _warn = console.warn.bind(console);
+  const _error = console.error.bind(console);
+  console.warn = (...a) => { addLog('warn', ...a); _warn(...a); };
+  console.error = (...a) => { addLog('error', ...a); _error(...a); };
+
+  window.clearLogs = () => { logEl.innerHTML = ''; };
+
+  // =========================================================================
+  // Test suites
+  // =========================================================================
+  window.runAll = async function () {
+    results.length = 0;
+    document.getElementById('suites').innerHTML = '<p style="color:var(--muted)">Running tests…</p>';
+    document.getElementById('btn-run').disabled = true;
+
+    // Small delay so the UI updates before tests run
+    await new Promise(r => setTimeout(r, 50));
+
+    // ---- Suite 1: Pure functions (no LLM dependency) ----
+    suite('1. Pure Functions — parseEvents, formatMessages, formatEvents, applyWindow, exportRawFromEvents');
+
+    test('parseEvents — parses raw JSON array string', () => {
+      const input = '[{"id":"evt_1","title":"Test","summary":"A test event","importance":5,"participants":["Alice"],"location":"","tags":[]}]';
+      const events = parseEvents(input);
+      if (!Array.isArray(events)) throw new Error('Expected array');
+      if (events.length !== 1) throw new Error(`Expected 1 event, got ${events.length}`);
+      if (events[0].title !== 'Test') throw new Error(`Expected title "Test", got "${events[0].title}"`);
+    });
+
+    test('parseEvents — parses JSON wrapped in ```json code block', () => {
+      const input = '```json\n[{"id":"evt_2","title":"Wrapped","summary":"...","importance":3,"participants":[],"location":"","tags":[]}]\n```';
+      const events = parseEvents(input);
+      if (events.length !== 1) throw new Error(`Expected 1, got ${events.length}`);
+      if (events[0].id !== 'evt_2') throw new Error(`Expected evt_2, got ${events[0].id}`);
+    });
+
+    test('parseEvents — parses JSON wrapped in ``` (no lang) code block', () => {
+      const input = '```\n[{"id":"evt_3","title":"NoLang","summary":"...","importance":1,"participants":[],"location":"","tags":[]}]\n```';
+      const events = parseEvents(input);
+      if (events.length !== 1) throw new Error(`Expected 1, got ${events.length}`);
+    });
+
+    test('parseEvents — throws on invalid JSON', () => {
+      let threw = false;
+      try { parseEvents('not json at all'); } catch (e) { threw = true; }
+      if (!threw) throw new Error('Expected parseEvents to throw on invalid input');
+    });
+
+    test('parseEvents — throws on JSON object (not array)', () => {
+      let threw = false;
+      try { parseEvents('{"id":"x"}'); } catch (e) { threw = true; }
+      if (!threw) throw new Error('Expected parseEvents to throw on non-array JSON');
+    });
+
+    test('parseEvents — handles empty array', () => {
+      const events = parseEvents('[]');
+      if (!Array.isArray(events)) throw new Error('Expected array');
+      if (events.length !== 0) throw new Error(`Expected 0, got ${events.length}`);
+    });
+
+    test('parseEvents — handles whitespace around JSON', () => {
+      const input = '\n\n  [{"id":"evt_ws","title":"WS","summary":"x","importance":5,"participants":[],"location":"","tags":[]}]  \n';
+      const events = parseEvents(input);
+      if (events.length !== 1) throw new Error(`Expected 1, got ${events.length}`);
+    });
+
+    test('formatMessages — formats ChatMessage[] to string', () => {
+      const msgs = [
+        { role: 'Alice', content: 'Hello!' },
+        { role: 'Bob', content: 'Hi Alice!' },
+      ];
+      const result = formatMessages(msgs);
+      if (typeof result !== 'string') throw new Error('Expected string');
+      if (!result.includes('Alice:')) throw new Error('Missing role name');
+      if (!result.includes('Hello!')) throw new Error('Missing content');
+      if (!result.includes('Bob:')) throw new Error('Missing second role');
+    });
+
+    test('formatMessages — returns empty string for empty array', () => {
+      const result = formatMessages([]);
+      if (result !== '') throw new Error(`Expected empty string, got "${result}"`);
+    });
+
+    test('formatEvents — serializes events to indented JSON', () => {
+      const events = [{ id: 'evt_a', title: 'A', summary: '...', importance: 5, participants: ['X'], location: '', tags: [] }];
+      const result = formatEvents(events);
+      const parsed = JSON.parse(result);
+      if (parsed[0].id !== 'evt_a') throw new Error('Round-trip mismatch');
+    });
+
+    test('applyWindow — returns all events if count ≤ windowSize', () => {
+      const events = [{ id: '1' }, { id: '2' }, { id: '3' }];
+      const result = applyWindow(events, 5);
+      if (result.length !== 3) throw new Error(`Expected 3, got ${result.length}`);
+    });
+
+    test('applyWindow — returns last N events if count > windowSize', () => {
+      const events = [{ id: '1' }, { id: '2' }, { id: '3' }, { id: '4' }, { id: '5' }];
+      const result = applyWindow(events, 3);
+      if (result.length !== 3) throw new Error(`Expected 3, got ${result.length}`);
+      if (result[0].id !== '3') throw new Error(`Expected id=3 as first, got ${result[0].id}`);
+      if (result[2].id !== '5') throw new Error(`Expected id=5 as last, got ${result[2].id}`);
+    });
+
+    test('applyWindow — windowSize=0 returns empty array', () => {
+      const events = [{ id: '1' }, { id: '2' }];
+      const result = applyWindow(events, 0);
+      if (result.length !== 0) throw new Error(`Expected 0, got ${result.length}`);
+    });
+
+    test('exportRawFromEvents — exports events as JSON string', () => {
+      const events = [{ id: 'evt_x', title: 'X', summary: '...', importance: 5, participants: [], location: '', tags: [] }];
+      const json = exportRawFromEvents(events);
+      const parsed = JSON.parse(json);
+      if (parsed[0].id !== 'evt_x') throw new Error('Round-trip failed');
+    });
+
+    // ---- Suite 2: Merge instructions ----
+    suite('2. Merge Functions — parseInstructions, applyInstructions');
+
+    test('parseInstructions — parses valid update/delete/add/keep instructions', () => {
+      const input = JSON.stringify([
+        { action: 'update', id: 'evt_a', changes: { title: 'Updated' } },
+        { action: 'delete', id: 'evt_b' },
+        { action: 'add', event: { id: 'evt_new', title: 'New', summary: '...', importance: 4, participants: [], location: '', tags: [] } },
+        { action: 'keep' },
+      ]);
+      const insts = parseInstructions(input);
+      if (insts.length !== 4) throw new Error(`Expected 4, got ${insts.length}`);
+      if (insts[0].action !== 'update') throw new Error('First should be update');
+      if (insts[1].action !== 'delete') throw new Error('Second should be delete');
+      if (insts[2].action !== 'add') throw new Error('Third should be add');
+      if (insts[3].action !== 'keep') throw new Error('Fourth should be keep');
+    });
+
+    test('parseInstructions — parses code-block wrapped instructions', () => {
+      const input = '```json\n[{"action":"delete","id":"evt_x"}]\n```';
+      const insts = parseInstructions(input);
+      if (insts.length !== 1) throw new Error(`Expected 1, got ${insts.length}`);
+    });
+
+    test('parseInstructions — filters out items with unknown action', () => {
+      const input = JSON.stringify([
+        { action: 'update', id: 'evt_ok', changes: { title: 'T' } },
+        { action: 'invalid_action', id: 'evt_bad' },
+      ]);
+      const insts = parseInstructions(input);
+      if (insts.length !== 1) throw new Error(`Expected 1 valid, got ${insts.length}`);
+    });
+
+    test('parseInstructions — filters out non-object items', () => {
+      const input = JSON.stringify([
+        'just a string',
+        { action: 'keep' },
+      ]);
+      const insts = parseInstructions(input);
+      if (insts.length !== 1) throw new Error(`Expected 1, got ${insts.length}`);
+    });
+
+    test('parseInstructions — filters update with missing changes', () => {
+      const input = JSON.stringify([
+        { action: 'update', id: 'evt_x' },
+      ]);
+      const insts = parseInstructions(input);
+      if (insts.length !== 0) throw new Error(`Expected 0, got ${insts.length}`);
+    });
+
+    test('parseInstructions — filters delete with missing id', () => {
+      const input = JSON.stringify([
+        { action: 'delete' },
+      ]);
+      const insts = parseInstructions(input);
+      if (insts.length !== 0) throw new Error(`Expected 0, got ${insts.length}`);
+    });
+
+    test('applyInstructions — applies update', () => {
+      const events = [
+        { id: 'evt_1', title: 'Old', summary: 'Old summary', importance: 3, participants: ['A'], location: '', tags: [] }
+      ];
+      const insts = [{ action: 'update', id: 'evt_1', changes: { title: 'New', importance: 7 } }];
+      const result = applyInstructions(events, null, insts);
+      if (result[0].title !== 'New') throw new Error(`Expected "New", got "${result[0].title}"`);
+      if (result[0].importance !== 7) throw new Error(`Expected 7, got ${result[0].importance}`);
+      if (result[0].summary !== 'Old summary') throw new Error('Unchanged field was modified');
+    });
+
+    test('applyInstructions — applies delete', () => {
+      const events = [
+        { id: 'evt_1', title: 'A', summary: '...', importance: 5, participants: [], location: '', tags: [] },
+        { id: 'evt_2', title: 'B', summary: '...', importance: 5, participants: [], location: '', tags: [] },
+      ];
+      const insts = [{ action: 'delete', id: 'evt_1' }];
+      const result = applyInstructions(events, null, insts);
+      if (result.length !== 1) throw new Error(`Expected 1 remaining, got ${result.length}`);
+      if (result[0].id !== 'evt_2') throw new Error('Wrong event deleted');
+    });
+
+    test('applyInstructions — applies add', () => {
+      const events = [{ id: 'evt_1', title: 'A', summary: '...', importance: 5, participants: [], location: '', tags: [] }];
+      const newEvent = { id: 'evt_new', title: 'New', summary: 'Added', importance: 4, participants: ['B'], location: 'Cafe', tags: ['food'] };
+      const insts = [{ action: 'add', event: newEvent }];
+      const result = applyInstructions(events, null, insts);
+      if (result.length !== 2) throw new Error(`Expected 2, got ${result.length}`);
+      if (result[1].id !== 'evt_new') throw new Error('New event not appended');
+    });
+
+    test('applyInstructions — handles empty instructions', () => {
+      const events = [{ id: 'evt_1', title: 'A', summary: '...', importance: 5, participants: [], location: '', tags: [] }];
+      const result = applyInstructions(events, null, []);
+      if (result.length !== 1) throw new Error('Events should be unchanged');
+    });
+
+    test('applyInstructions — complex scenario: update + delete + add', () => {
+      const events = [
+        { id: 'evt_a', title: 'Keep', summary: '...', importance: 5, participants: [], location: '', tags: [] },
+        { id: 'evt_b', title: 'Update Me', summary: 'old', importance: 2, participants: [], location: '', tags: [] },
+        { id: 'evt_c', title: 'Delete Me', summary: '...', importance: 1, participants: [], location: '', tags: [] },
+      ];
+      const insts = [
+        { action: 'update', id: 'evt_b', changes: { title: 'Updated', importance: 6 } },
+        { action: 'delete', id: 'evt_c' },
+        { action: 'add', event: { id: 'evt_d', title: 'Added', summary: 'new', importance: 8, participants: ['Z'], location: 'Home', tags: ['milestone'] } },
+      ];
+      const result = applyInstructions(events, null, insts);
+      const ids = result.map(e => e.id);
+      if (ids.length !== 3) throw new Error(`Expected 3, got ${ids.length}`);
+      if (!ids.includes('evt_a')) throw new Error('evt_a should be kept');
+      if (!ids.includes('evt_b')) throw new Error('evt_b should be kept (updated)');
+      if (!ids.includes('evt_d')) throw new Error('evt_d should be added');
+      if (ids.includes('evt_c')) throw new Error('evt_c should be deleted');
+      const updated = result.find(e => e.id === 'evt_b');
+      if (updated.title !== 'Updated') throw new Error('evt_b title not updated');
+    });
+
+    // ---- Suite 3: Prompt templates ----
+    suite('3. Prompt Templates — extractPrompt, mergePrompt, memoryPrompt');
+
+    test('extractPrompt is a non-empty string', () => {
+      if (typeof extractPrompt !== 'string') throw new Error(`Expected string, got ${typeof extractPrompt}`);
+      if (extractPrompt.length < 100) throw new Error('Prompt too short, likely empty or truncated');
+    });
+
+    test('extractPrompt contains expected sections', () => {
+      if (!extractPrompt.includes('史官')) throw new Error('Missing core role description');
+      if (!extractPrompt.includes('{{existingEvents}}')) throw new Error('Missing existingEvents placeholder');
+      if (!extractPrompt.includes('{{recentMessages}}')) throw new Error('Missing recentMessages placeholder');
+      if (!extractPrompt.includes('"participants"')) throw new Error('Missing output format');
+    });
+
+    test('mergePrompt is a non-empty string', () => {
+      if (typeof mergePrompt !== 'string') throw new Error(`Expected string, got ${typeof mergePrompt}`);
+      if (mergePrompt.length < 100) throw new Error('Prompt too short');
+    });
+
+    test('mergePrompt contains expected sections', () => {
+      if (!mergePrompt.includes('{{existingEvents}}')) throw new Error('Missing existingEvents placeholder');
+      if (!mergePrompt.includes('{{newEvents}}')) throw new Error('Missing newEvents placeholder');
+      if (!mergePrompt.includes('update') || !mergePrompt.includes('delete') || !mergePrompt.includes('add')) throw new Error('Missing action definitions');
+    });
+
+    test('memoryPrompt is a non-empty string', () => {
+      if (typeof memoryPrompt !== 'string') throw new Error(`Expected string, got ${typeof memoryPrompt}`);
+      if (memoryPrompt.length < 50) throw new Error('Prompt too short');
+    });
+
+    test('memoryPrompt contains expected placeholder', () => {
+      if (!memoryPrompt.includes('{{memoryTimeline}}')) throw new Error('Missing memoryTimeline placeholder');
+    });
+
+    // ---- Suite 4: Edge cases & data integrity ----
+    suite('4. Edge Cases & Data Integrity');
+
+    test('parseEvents preserves all Event fields', () => {
+      const input = JSON.stringify([{
+        id: 'evt_full', title: 'Full Test', summary: 'A fully populated event',
+        importance: 9, participants: ['Alice', 'Bob', 'Charlie'],
+        location: 'The Old Library', tags: ['investigation', 'clue', 'milestone'],
+      }]);
+      const events = parseEvents(input);
+      const e = events[0];
+      if (e.id !== 'evt_full') throw new Error('id mismatch');
+      if (e.importance !== 9) throw new Error('importance mismatch');
+      if (e.participants.length !== 3) throw new Error('participants count mismatch');
+      if (e.participants[2] !== 'Charlie') throw new Error('participants[2] mismatch');
+      if (e.location !== 'The Old Library') throw new Error('location mismatch');
+      if (e.tags.length !== 3) throw new Error('tags count mismatch');
+    });
+
+    test('formatMessages handles special characters', () => {
+      const msgs = [
+        { role: 'User', content: 'Line 1\nLine 2\nLine 3' },
+        { role: 'AI', content: 'Quotes: "hello" and <tags> & stuff' },
+      ];
+      const result = formatMessages(msgs);
+      if (!result.includes('Line 1\nLine 2\nLine 3')) throw new Error('Multiline content broken');
+      if (!result.includes('<tags>')) throw new Error('Angle brackets lost');
+    });
+
+    test('formatMessages handles empty content', () => {
+      const msgs = [{ role: 'System', content: '' }];
+      const result = formatMessages(msgs);
+      if (!result.includes('System:')) throw new Error('Role missing for empty content');
+    });
+
+    test('exportRawFromEvents round-trip preserves data', () => {
+      const events = [
+        { id: 'a', title: 'T1', summary: 'S1', importance: 1, participants: ['p1'], location: 'l1', tags: ['t1'] },
+        { id: 'b', title: 'T2', summary: 'S2', importance: 10, participants: ['p2', 'p3'], location: '', tags: [] },
+      ];
+      const json = exportRawFromEvents(events);
+      const parsed = JSON.parse(json);
+      if (JSON.stringify(parsed) !== JSON.stringify(events)) throw new Error('Round-trip mismatch');
+    });
+
+    test('applyInstructions ignores keep action', () => {
+      const events = [{ id: 'evt_1', title: 'A', summary: '...', importance: 5, participants: [], location: '', tags: [] }];
+      const result = applyInstructions(events, null, [{ action: 'keep' }]);
+      if (result.length !== 1) throw new Error('keep should not modify events');
+    });
+
+    test('applyInstructions update with only one field changes only that field', () => {
+      const events = [{ id: 'evt_x', title: 'Original', summary: 'Original summary', importance: 5, participants: ['A'], location: 'Here', tags: ['tag1'] }];
+      const result = applyInstructions(events, null, [{ action: 'update', id: 'evt_x', changes: { location: 'There' } }]);
+      if (result[0].location !== 'There') throw new Error('location not updated');
+      if (result[0].title !== 'Original') throw new Error('title should be unchanged');
+      if (result[0].summary !== 'Original summary') throw new Error('summary should be unchanged');
+    });
+
+    test('applyInstructions handles non-existent id in update gracefully', () => {
+      const events = [{ id: 'evt_1', title: 'A', summary: '...', importance: 5, participants: [], location: '', tags: [] }];
+      const result = applyInstructions(events, null, [{ action: 'update', id: 'evt_nonexistent', changes: { title: 'X' } }]);
+      if (result.length !== 1) throw new Error('Should still have 1 event');
+    });
+
+    // ---- Done ----
+    render();
+    document.getElementById('btn-run').disabled = false;
+    addLog('info', `All suites complete — ${results.reduce((s, r) => s + r.passed, 0)} passed, ${results.reduce((s, r) => s + r.failed, 0)} failed`);
+  };
+
+  // Auto-run on load
+  setTimeout(runAll, 200);
+</script>
+</body>
+</html>

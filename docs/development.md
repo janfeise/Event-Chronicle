@@ -27,9 +27,15 @@
 event-chronicle/
 │
 ├── sdk/
-│   └── index.ts                 ← SDK 统一入口（唯一对外窗口）
+│   ├── index.ts                 ← Node.js SDK 入口（完整管线 + LLM 客户端）
+│   ├── browser.ts              ← Browser SDK 入口（纯函数, 无 LLM 客户端）
+│   └── browser/                ← 浏览器安全实现
+│       ├── prompts.ts          ← Prompt 字符串常量 (与 prompts/*.md 同步)
+│       ├── parse-instructions.ts
+│       ├── apply-instructions.ts
+│       └── raw-exporter.ts
 │
-├── index.ts                     ← 启动入口（startup 函数）
+├── index.ts                     ← Node.js 启动入口（startup 函数）
 ├── cli.ts                       ← CLI 命令入口
 │
 ├── config/
@@ -75,8 +81,11 @@ event-chronicle/
 ├── test/                        ← 测试
 ├── data/                        ← 运行时数据（.gitignore）
 │
+├── st-extension/                ← SillyTavern 插件（独立 git 仓库）
+│
 ├── tsconfig.json                ← TypeScript 配置
-├── tsup.config.ts               ← 构建配置（ESM + CJS 双输出）
+├── tsup.config.ts               ← Node.js 构建配置（ESM + CJS）
+├── tsup.browser.config.ts       ← Browser 构建配置（ESM only, 全量 bundle）
 └── package.json
 ```
 
@@ -195,10 +204,53 @@ promptManager.getWithVars("extract-event", { recentMessages: "..." })
 
 ---
 
+## Browser SDK (双模式架构)
+
+项目支持两种运行环境，共享同一套 core/types/prompts 源码：
+
+```
+                    core/ config/ types/ prompts/
+                         │
+              ┌──────────┴──────────┐
+              ▼                      ▼
+       sdk/index.ts           sdk/browser.ts
+       (Node.js entry)        (Browser entry)
+              │                      │
+     startup()              parseEvents()
+     processMessages()      formatMessages()
+     exportMemory()         extractPrompt
+     initLLM()              mergePrompt
+     loadEnv()              applyInstructions()
+              │                      │
+         需要 openai            零外部依赖
+         需要 .env              纯函数
+         文件 I/O              无文件系统
+```
+
+**Browser SDK (`event-chronicle/browser`) 导出:**
+
+| 函数/常量 | 类型 | 说明 |
+|---|---|---|
+| `parseEvents` | 函数 | 解析 LLM 响应 → Event[] |
+| `formatMessages` | 函数 | ChatMessage[] → 格式化文本 |
+| `formatEvents` | 函数 | Event[] → JSON 字符串 |
+| `applyWindow` | 函数 | 滑动窗口截取 |
+| `exportRawFromEvents` | 函数 | Event[] → JSON 导出 |
+| `parseInstructions` | 函数 | 解析合并指令 |
+| `applyInstructions` | 函数 | 执行合并指令 |
+| `extractPrompt` | 常量 | 事件提取 Prompt 模板 |
+| `mergePrompt` | 常量 | 事件合并 Prompt 模板 |
+| `memoryPrompt` | 常量 | 记忆注入 Prompt 模板 |
+
+**设计约束**：Browser SDK 不包含 LLM 客户端。LLM 调用由宿主环境（如 SillyTavern）通过依赖注入提供。
+
+**构建**：`tsup.browser.config.ts` 将所有依赖内联到单一 ESM bundle，输出 `dist/browser/browser.mjs`。
+
+---
+
 ## 相关文档
 
 | 文档 | 说明 |
 |------|------|
 | [ST 扩展插件开发文档](./st-extension-dev.md) | SillyTavern 适配层架构、设计决策、开发工作流 |
-| [ST 插件设计文档](./st-plugin-guide.md) | 插件功能设计与配置项详解 |
-| [SDK 封装指南](./sdk-guide.md) | 从零封装 SDK 的新手教程 |
+| [ST 扩展用户文档](../st-extension/README.md) | 安装说明 + 功能列表 + 配置项 |

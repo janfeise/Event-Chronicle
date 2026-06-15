@@ -1,6 +1,6 @@
 {
   "name": "Event Chronicle",
-  "description": "Timeline-based Memory Engine capable of holding dialogues and automatically extracting structured timeline events.",
+  "description": "Dual-mode (Node.js + Browser) timeline-based memory engine. Extracts structured events from AI chat logs, builds chronicles, and exports long-term memory.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": []
 }

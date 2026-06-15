@@ -44,14 +44,17 @@
     "prepublishOnly": "npm run build && npm run build:browser",
     "sync:st": "npm run build:browser && node -e \"const fs=require('fs');fs.copyFileSync('dist/browser/browser.mjs','st-extension/lib/ec-sdk.mjs');console.log('[sync:st] Copied browser.mjs -> st-extension/lib/ec-sdk.mjs')\"",
     "sync:st:push": "npm run sync:st && git add st-extension/lib/ec-sdk.mjs && git commit -m \"chore: sync ec-sdk.mjs from SDK browser build\" && git subtree push --prefix=st-extension origin st-extension",
-    "sync-st-extension": "git subtree push --prefix=st-extension origin st-extension"
+    "sync-st-extension": "git subtree push --prefix=st-extension origin st-extension",
+    "test:browser": "node test/browser/server.mjs"
   },
   "dependencies": {
     "dotenv": "^17.4.2",
+    "event-chronicle": "^0.2.0",
     "openai": "^6.42.0"
   },
   "devDependencies": {
     "@types/node": "^25.9.3",
+    "playwright": "^1.60.0",
     "tsup": "^8.0.0",
     "typescript": "^5.5.0"
   },
