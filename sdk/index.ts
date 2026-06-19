@@ -72,6 +72,7 @@ export { PromptManager } from "../prompts/manager";
 
 export type {
   Event,
+  EventSource,
   ChatMessage,
   LLMConfig,
   MemoryExportOptions,

@@ -109,6 +109,33 @@ ChatMessage[] → formatMessages → prompt → LLM → parseEvents → injectId
 | `parseEvents` | 解析 LLM 响应，剥离代码块，JSON.parse |
 | `injectIds` | 程序侧注入 `evt_{timestamp}_{random6hex}` 唯一 ID |
 
+### Event 数据模型
+
+```typescript
+interface Event {
+  id: string;                    // 唯一 ID，格式 evt_{timestamp}_{random6hex}
+  title: string;                 // 事件标题
+  summary: string;               // 事件概述
+  importance: number;            // 重要度 1-10
+  participants: string[];        // 参与者
+  location: string;              // 地点
+  tags: string[];                // 标签
+  timestamp: number;             // 事件发生时间（Unix 秒，来自消息 send_date）
+  source?: EventSource;          // 来源消息引用（可选）
+}
+
+interface EventSource {
+  range: [number, number];       // 来源消息在聊天中的索引范围 [start, end)，左闭右开
+  count: number;                 // 来源消息数量
+  preview?: string;              // 最后一条消息的前 100 字符（降级显示用）
+}
+```
+
+**来源引用设计**：采用引用方案而非存储原始消息。原因：
+- 消息源由宿主环境（如 SillyTavern）独立存储，Event 无需重复
+- 每 event 仅增加 ~30-130B（vs 存原文 ~1.2KB）
+- `range` 记录连续切片索引，`preview` 用于消息源不可用时的降级显示
+
 ### Merge（事件合并）
 
 通过 LLM 分析已有事件和新事件，输出**指令**驱动数据变更（而非输出全量事件 JSON）。

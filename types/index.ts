@@ -60,6 +60,18 @@ export interface Event {
   tags: string[];
   /** 事件发生时间（Unix 秒级时间戳） */
   timestamp: number;
+  /** 来源消息引用 */
+  source?: EventSource;
+}
+
+/** 事件来源消息引用 */
+export interface EventSource {
+  /** 来源消息在聊天中的索引范围 [start, end)，左闭右开 */
+  range: [number, number];
+  /** 来源消息数量 */
+  count: number;
+  /** 最后一条消息的前 100 字符（降级显示用） */
+  preview?: string;
 }
 
 // ---------------------------------------------------------------------------

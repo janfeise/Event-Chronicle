@@ -35,4 +35,4 @@ export { extractPrompt, mergePrompt, memoryPrompt } from "./browser/prompts";
 // 类型
 // ---------------------------------------------------------------------------
 
-export type { Event, ChatMessage, MergeInstruction, MemoryExportOptions } from "../types";
+export type { Event, EventSource, ChatMessage, MergeInstruction, MemoryExportOptions } from "../types";
