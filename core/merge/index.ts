@@ -78,8 +78,8 @@ export function applyInstructions(
   for (const event of existingEvents) {
     if (!event.id) {
       logger.warn("merge", "Existing event missing id, generating fallback", { title: event.title });
-      event.id = generateFallbackId();
     }
+    ensureEventMeta(event);
     map.set(event.id, { ...event });
   }
 
@@ -115,8 +115,8 @@ export function applyInstructions(
         const event = { ...inst.event };
         if (!event.id) {
           logger.warn("merge", "add instruction event missing id, generating fallback");
-          event.id = generateFallbackId();
         }
+        ensureEventMeta(event);
         if (map.has(event.id)) {
           logger.warn("merge", "Duplicate add, skipping", { id: event.id });
           break;
@@ -142,4 +142,9 @@ function generateFallbackId(): string {
   const ts = Date.now();
   const rand = Math.random().toString(16).slice(2, 8);
   return `evt_${ts}_${rand}`;
+}
+
+function ensureEventMeta(event: Event): void {
+  if (!event.id) event.id = generateFallbackId();
+  if (!event.timestamp) event.timestamp = Math.floor(Date.now() / 1000);
 }

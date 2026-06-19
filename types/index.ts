@@ -16,6 +16,8 @@
 export interface ChatMessage {
   role: string;
   content: string;
+  /** 消息发送时间（Unix 秒级时间戳），用于推导事件发生时间 */
+  timestamp?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -56,6 +58,8 @@ export interface Event {
   participants: string[];
   location: string;
   tags: string[];
+  /** 事件发生时间（Unix 秒级时间戳） */
+  timestamp: number;
 }
 
 // ---------------------------------------------------------------------------

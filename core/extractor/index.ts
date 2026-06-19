@@ -38,19 +38,29 @@ export async function extractEvents(
   // 4. 解析结果
   const events = parseEvents(response);
 
-  // 5. 程序注入 ID（非 LLM 生成，减少 token 开销且更可靠）
-  return injectIds(events);
+  // 5. 程序注入 ID + timestamp（非 LLM 生成，减少 token 开销且更可靠）
+  const lastTs = findLastTimestamp(messages);
+  return injectMetadata(events, lastTs);
 }
 
 // ---------------------------------------------------------------------------
 // 内部
 // ---------------------------------------------------------------------------
 
-/** 为每个事件注入唯一 ID，格式 evt_{timestamp}_{random6hex} */
-function injectIds(events: Event[]): Event[] {
-  const ts = Date.now();
+/** 从消息列表中提取最后一条消息的时间戳 */
+function findLastTimestamp(messages: ChatMessage[]): number | undefined {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].timestamp) return messages[i].timestamp;
+  }
+  return undefined;
+}
+
+/** 为每个事件注入唯一 ID 和 timestamp */
+function injectMetadata(events: Event[], fallbackTs?: number): Event[] {
+  const ts = fallbackTs ?? Math.floor(Date.now() / 1000);
   for (const e of events) {
-    e.id = `evt_${ts}_${Math.random().toString(16).slice(2, 8)}`;
+    e.id = `evt_${Date.now()}_${Math.random().toString(16).slice(2, 8)}`;
+    if (!e.timestamp) e.timestamp = ts;
   }
   return events;
 }
