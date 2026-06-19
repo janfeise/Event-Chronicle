@@ -9,14 +9,17 @@
 ## 架构总览
 
 ```
-ST 聊天消息
+ST 聊天消息 (ctx.chat)
     │
     ▼ CHARACTER_MESSAGE_RENDERED 事件
-index.js (ST 集成层, ~760 行)
+index.js (ST 集成层, ~940 行)
     │ llmCall() → POST /api/backends/chat-completions/generate
+    │ getMessagesByRange() → 供 timeline 查询来源消息
     ▼
-ec-bridge.js (适配层, ~740 行)
-    │ extractEvents() → mergeEvents() → processMessages()
+ec-bridge.js (适配层, ~790 行)
+    │ extractEvents(messages, existing, context, startIndex)
+    │   → 注入 id + timestamp + source (消息来源引用)
+    │ mergeEvents() → processMessages()
     ▼
 lib/ec-sdk.mjs (SDK 浏览器 bundle, ~470 行, 由 npm run sync:st 生成)
     parseEvents / formatMessages / applyInstructions / ...
@@ -26,22 +29,22 @@ lib/ec-sdk.mjs (SDK 浏览器 bundle, ~470 行, 由 npm run sync:st 生成)
 ### 存储分离架构
 
 ```
-┌─────────────────────────────┬─────────────────────────────────────┐
-│  extension_settings         │  metadata (chat_metadata)           │
-│  → settings.json            │  → {chat}.jsonl                     │
-│  全局配置 (用户偏好)          │  per-chat 业务数据                   │
-│                             │                                     │
-│  autoExtractionEnabled      │  _events: Event[]                   │
-│  extractTriggerCount        │  _merge: { newEventCount,           │
-│  mergeTriggerCount          │           lastMergeAt }             │
-│  extractionCooldown         │  _batch: { lastProcessedIndex,      │
-│  overrideMaxTokens          │           totalMessages, completed } │
-│  batchSliceSize             │                                     │
-│  highlightThreshold         │                                     │
-│  llmOverride { ... }        │                                     │
-│                             │                                     │
-│  持久化: saveSettingsDebounced│ 持久化: saveMetadataDebounced       │
-└─────────────────────────────┴─────────────────────────────────────┘
+┌─────────────────────────────┬───────────────────────────────────────┐
+│  extension_settings         │  metadata (chat_metadata)             │
+│  → settings.json            │  → {chat}.jsonl                       │
+│  全局配置 (用户偏好)          │  per-chat 业务数据                     │
+│                             │                                       │
+│  autoExtractionEnabled      │  _events: Event[]                     │
+│  extractTriggerCount        │    每个 Event 含 source 引用:           │
+│  mergeTriggerCount          │    { range, count, preview }          │
+│  extractionCooldown         │  _merge: { newEventCount,             │
+│  overrideMaxTokens          │           lastMergeAt }               │
+│  batchSliceSize             │  _batch: { lastProcessedIndex,        │
+│  highlightThreshold         │           totalMessages, completed }   │
+│  llmOverride { ... }        │                                       │
+│                             │                                       │
+│  持久化: saveSettingsDebounced│ 持久化: saveMetadataDebounced         │
+└─────────────────────────────┴───────────────────────────────────────┘
 ```
 
 ---
@@ -51,14 +54,14 @@ lib/ec-sdk.mjs (SDK 浏览器 bundle, ~470 行, 由 npm run sync:st 生成)
 ```
 st-extension/
 ├── manifest.json          # ST 扩展声明 (hooks.activate: "init", js: "index.js")
-├── index.js               # 主入口：生命周期, LLM 桥接, 设置 UI 注入, Wand 菜单
-├── ec-bridge.js           # SDK 适配层：提取/合并/批量生成/CRUD/存储
+├── index.js               # 主入口：生命周期, LLM 桥接, 设置 UI 注入, Wand 菜单, 公共 API
+├── ec-bridge.js           # SDK 适配层：提取/合并/批量生成/CRUD/存储/来源注入
 ├── lib/ec-sdk.mjs         # SDK 浏览器 bundle (构建产物, 勿手动编辑)
-├── timeline.html          # 独立时间线浏览器页面
-├── timeline.js            # 时间线渲染: 筛选, 排序, 分组显示
+├── timeline.html          # 独立时间线浏览器页面 (含气泡聊天样式 CSS)
+├── timeline.js            # 时间线渲染: 筛选, 排序, 来源消息展开, 截断
 ├── editor.js              # 事件编辑/删除弹窗
 ├── settings.html          # 设置面板模板 (ST iframe 加载)
-├── style.css              # 扩展 UI 样式
+├── style.css              # 扩展 UI 样式 (含 danger 按钮)
 ├── README.md              # 用户安装/功能文档
 └── manifest.json          # ST 扩展注册
 ```
@@ -108,7 +111,7 @@ extension_settings['event-chronicle']
 **metadata — per-chat 业务数据** (`{chat}.jsonl`)
 ```
 getContext().metadata['event-chronicle']
-  ├── _events    → Event[]
+  ├── _events    → Event[] (每个 Event 含 source?: { range, count, preview })
   ├── _merge     → { newEventCount, lastMergeAt }
   └── _batch     → { lastProcessedIndex, totalMessages, completed }
 ```
@@ -162,6 +165,59 @@ const ts = lastMsg?.send_date
 
 **设计原因**：ST 每条消息都有 `send_date`（ISO 字符串），记录消息创建时间。Event 作为对话时间线，时间应反映对话发生时刻，而非 LLM 提取时刻。取最后一条消息的时间，因为一批消息 = 一个时间段。
 
+### 8. 来源消息引用 (EventSource)
+
+Event 通过 `source` 字段记录来源消息的引用，而非存储原始消息内容。
+
+```typescript
+interface EventSource {
+  range: [number, number];  // 来源消息在 ctx.chat 中的索引范围 [start, end)
+  count: number;            // 来源消息数量
+  preview?: string;         // 最后一条消息前 100 字符（降级显示用）
+}
+```
+
+**注入时机**：`ec-bridge.js extractEvents()` 中，与 ID/timestamp 一起注入。
+
+```js
+const startIdx = startIndex || 0;
+const endIdx = startIdx + messages.length;
+const preview = String(lastMsg?.mes || '').slice(0, 100);
+const eventsWithIds = parsed.map(e => ({
+  ...e,
+  id: e.id || generateEventId(),
+  timestamp: e.timestamp || ts,
+  source: e.source || { range: [startIdx, endIdx], count: messages.length, preview },
+}));
+```
+
+**startIndex 传递链**：
+- 自动提取：`index.js` → `processMessages(msgs, { startIndex: chat.length - threshold })`
+- 批量生成：`ec-bridge.js startBatchGeneration` → `processMessages(chunk, { startIndex: idx })`
+
+**设计原因**：
+- 采用引用而非原文，体积从 ~1.2KB/event 降至 ~30B/event
+- 消息源由 ST 独立存储，EC 不重复
+- `preview` 用于消息源不可用时的降级显示
+- Timeline 通过 `window.opener.EventChronicle.getMessagesByRange(start, end)` 查询消息
+
+### 9. 清空事件
+
+Settings 面板提供 danger 风格的「清空所有事件」按钮，二次 confirm 确认。
+
+```js
+// ec-bridge.js
+export function clearEvents() {
+  saveEvents([]);
+  saveBatchProgress({ lastProcessedIndex: 0, totalMessages: 0, completed: false });
+}
+
+// index.js API
+clearEvents: () => { ecBridge.clearEvents(); ecBridge.saveAndPersist(); }
+```
+
+UI 使用 `.menu_button.danger` 样式（红色），两次 `confirm()` 防误操作。
+
 ---
 
 ## 文件职责
@@ -169,13 +225,14 @@ const ts = lastMsg?.send_date
 | 文件 | 行数 | 核心职责 |
 |------|------|----------|
 | `manifest.json` | 9 | ST 注册: `display_name`, `version`, `js`, `css`, `hooks.activate` |
-| `index.js` | ~760 | ST 生命周期, `llmCall`, 设置 UI, Wand 菜单, `window.EventChronicle` API, metadata 注入/迁移 |
-| `ec-bridge.js` | ~740 | SDK 适配, `extractEvents`, `mergeEvents`, `processMessages`, 增量 `startBatchGeneration`, CRUD, 双存储适配 |
+| `index.js` | ~940 | ST 生命周期, `llmCall`, 设置 UI (含 danger 清空按钮), Wand 菜单, `window.EventChronicle` API (含 `getMessagesByRange`, `clearEvents`), metadata 注入/迁移 |
+| `ec-bridge.js` | ~790 | SDK 适配, `extractEvents` (注入 id + timestamp + source), `mergeEvents`, `processMessages`, 增量 `startBatchGeneration`, CRUD, `clearEvents`, 双存储适配 |
 | `lib/ec-sdk.mjs` | ~470 | SDK 纯函数 bundle (构建产物) |
-| `timeline.html` | ~75 | 独立时间线窗口, 筛选器 + 事件卡片 + 编辑弹窗 |
-| `timeline.js` | ~80 | 时间线渲染: `refresh()`, `apply()`, `render()`, `doExport()` |
+| `timeline.html` | ~680 | 独立时间线窗口, 筛选器, 事件卡片, 编辑弹窗, 来源消息气泡样式 (展开动画, 头像, 时间戳, 截断) |
+| `timeline.js` | ~280 | 时间线渲染: `refresh()`, `apply()`, `render()`, `card()`, `toggleSource()`, `formatTime()`, `doExport()`, 截断事件委托 |
 | `editor.js` | ~59 | 事件编辑: `edit()`, `saveEdit()`, `del()`, `closeModal()` |
 | `settings.html` | ~115 | 设置面板 iframe 模板 + 批量生成按钮逻辑 |
+| `style.css` | ~95 | 扩展 UI 样式: 配置项布局, 进度条, 状态指示器, `.menu_button.danger` |
 
 ---
 
@@ -223,3 +280,10 @@ node -e "import('./lib/ec-sdk.mjs').then(m => console.log(Object.keys(m)))"
 | 编辑删除 | 时间线中编辑/删除事件, 刷新后确认持久化 |
 | 存储分离 | `settings.json` 不含 `_events/_merge/_batch`；`{chat}.jsonl` 的 metadata 包含业务数据 |
 | 聊天切换 | 切换聊天后事件自动隔离, metadata 重新注入 |
+| 来源引用 | 新提取的事件 metadata 含 `source.range` 和 `source.count` |
+| 来源查看 | 时间线点击「来源消息」→ 平滑展开气泡（用户靠右蓝，角色靠左紫）→ 再次点击折叠 |
+| 来源降级 | 切换聊天后打开 timeline → 消息不可用时显示 preview 降级 |
+| 消息截断 | 长消息截断到 5 行，点击可展开/折叠 |
+| 清空事件 | Settings 面板点击「清空所有事件」→ 两次 confirm → 事件清空 + success toast |
+| 清空无事件 | 无事件时点击清空 → warning toast 提示 |
+| Danger 按钮 | 清空按钮显示为红色 danger 风格 |
