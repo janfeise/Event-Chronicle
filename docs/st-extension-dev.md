@@ -218,6 +218,172 @@ clearEvents: () => { ecBridge.clearEvents(); ecBridge.saveAndPersist(); }
 
 UI 使用 `.menu_button.danger` 样式（红色），两次 `confirm()` 防误操作。
 
+### 10. 国际化 (i18n)
+
+采用 ST 官方 i18n 方案，语言文件通过 `manifest.json` 声明，ST 启动时自动 fetch 并调用 `addLocaleData()`。扩展代码无需手动加载语言包。
+
+#### 目录结构
+
+```
+st-extension/
+├── i18n/
+│   ├── zh-cn.json    # 简体中文（默认）
+│   └── en.json       # English
+└── manifest.json     # i18n 字段声明
+```
+
+#### manifest.json 声明
+
+```json
+{
+  "i18n": {
+    "zh-cn": "i18n/zh-cn.json",
+    "en": "i18n/en.json"
+  }
+}
+```
+
+#### 翻译 API
+
+ST 提供三个翻译入口，插件在不同层级使用不同入口：
+
+| API | 用途 | 获取方式 | 使用位置 |
+|---|---|---|---|
+| `translate(key)` | 按语义 key 查翻译，返回字符串 | `getContext().translate` | index.js, ec-bridge.js, timeline.js |
+| `` t`text ${val}` `` | 标签模板字面量（支持变量插值 `${0}`, `${1}`…） | `getContext().t` | index.js (主入口) |
+| `data-i18n="key"` | HTML 属性自动翻译 | ST MutationObserver | timeline.html |
+
+**重要**：`t` 是标签模板字面量 (`t`...``)，不是普通函数。`t('key')` 是错误用法。
+
+#### 代码中的使用
+
+**index.js（主入口）** — 封装 `tr()` 和 `_t` 两个 helper：
+
+```javascript
+// 初始化
+let _translate = null;
+let _t = null;
+
+function initI18n() {
+  try {
+    const ctx = getContext();
+    _translate = ctx.translate || ((key) => key);
+    _t = ctx.t || ((strings, ...vals) => {
+      let result = "";
+      strings.forEach((s, i) => { result += s + (vals[i] ?? ""); });
+      return result;
+    });
+  } catch (e) {
+    _translate = (key) => key;
+    _t = (strings, ...vals) => { /* fallback */ };
+  }
+}
+
+// 语义 key 翻译（不带变量）
+function tr(key) { return _translate(key); }
+```
+
+- `tr(key)` — 用于"查表"式翻译，key 固定且无变量
+- `_t`...`` — 用于带变量插值的翻译
+
+```javascript
+// 示例：语义 key（无变量）
+toastr.info(tr("ec.toast.noNewEvents"), "Event Chronicle");
+
+// 示例：标签模板字面量（有变量）
+toastr.success(_t`📜 提取完成 — 新增 ${count} 个事件`, "Event Chronicle");
+```
+
+**ec-bridge.js（适配层）** — 通过依赖注入获取（与 `_generateRaw` 同模式）：
+
+```javascript
+let _translate = (key) => key;
+export function setTranslate(fn) { _translate = fn; }
+function tr(key) { return _translate(key); }
+
+// index.js init() 中注入
+initI18n();
+ecBridge.setTranslate(tr);
+```
+
+**timeline.js / editor.js（独立页面）** — 通过 `window.opener.EventChronicle` 桥接：
+
+```javascript
+function tr(key) {
+  var a = api();  // window.opener.EventChronicle
+  if (a && a.translate) return a.translate(key);
+  return key;
+}
+
+// index.js 暴露公共 API
+translate: (key) => {
+  try { return getContext().translate(key); } catch (e) { return key; }
+}
+```
+
+**timeline.html（静态 HTML）** — 使用 `data-i18n` 属性：
+
+```html
+<!-- 元素文本翻译 -->
+<button data-i18n="ec.timeline.refresh">刷新</button>
+
+<!-- 属性翻译（如 placeholder） -->
+<input data-i18n="[placeholder]ec.timeline.searchPlaceholder" placeholder="搜索事件..." />
+
+<!-- <option> 文本翻译 -->
+<option value="7" data-i18n="ec.timeline.keyEvents">★7+ 关键</option>
+```
+
+ST 的 MutationObserver 自动翻译通过 `innerHTML` 动态注入的带 `data-i18n` 的元素。
+
+#### Key 命名规范
+
+```
+ec.{module}.{feature}[.{detail}]
+```
+
+**模块前缀**：
+
+| 模块 | 范围 |
+|---|---|
+| `ec.settings.*` | 设置面板 UI 文本 |
+| `ec.status.*` | 状态指示器文本 |
+| `ec.toast.*` | Toast 通知消息 |
+| `ec.dialog.*` | 确认对话框 |
+| `ec.notice.*` | 首次安装副作用说明 |
+| `ec.menu.*` | Wand 菜单项 |
+| `ec.timeline.*` | 时间线浏览页面 |
+| `ec.editor.*` | 事件编辑弹窗 |
+| `ec.export.*` | 导出功能 |
+| `ec.memory.*` | 记忆注入 prompt |
+
+#### 带变量的翻译
+
+使用 `${0}`, `${1}`, … 占位符（ST 标签模板索引格式），key 为完整中文原文，value 为翻译后原文。
+
+```json
+{
+  "📜 提取完成 — 新增 ${0} 个事件，共 ${1} 个": "📜 Extraction complete — ${0} new events, ${1} total",
+  "${0} / ${1} 个事件": "${0} / ${1} events"
+}
+```
+
+**设计原因**：ST 的 `t` 标签模板按照 `strings` 和 `vals` 数组工作。`t`...`` 会将模板分解为静态字符串数组和变量数组，ST 内部将静态字符串拼接为完整 key 去查表。因此 key 必须是完整的中文原文，而非 `ec.xxx` 风格的语义 key。
+
+#### 扩展新语言
+
+1. 创建 `i18n/xx-xx.json`（复制 `en.json` 修改 value）
+2. `manifest.json` 的 `i18n` 中加一行：`"xx-xx": "i18n/xx-xx.json"`
+
+#### 不国际化的部分
+
+| 类型 | 原因 |
+|---|---|
+| `console.log` 开发日志 | 用户不可见 |
+| `manifest.json` 的 `display_name` | ST 不翻译此字段 |
+| SVG 图标 | 纯视觉元素 |
+| 品牌名 "Visual Memory" | 保持品牌一致性 |
+
 ---
 
 ## 文件职责
